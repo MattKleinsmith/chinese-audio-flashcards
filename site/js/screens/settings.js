@@ -97,6 +97,7 @@ export function render(root, app) {
         parse: Number, onChange: (v) => app.player.setRate(v),
       }),
       toggle(app, 'showPinyin', 'Show pinyin', 'Also switchable on each card; tone colours follow it'),
+      toggle(app, 'showSpacing', 'Show word spacing in sentences', 'Also switchable on each card; Chinese is normally written without spaces'),
       toggle(app, 'toneColors', 'Tone colours'),
       toggle(app, 'showTraditional', 'Show traditional characters'),
       toggle(app, 'showDefinition', 'Show definition on word cards'),
@@ -174,8 +175,32 @@ export function render(root, app) {
       h('p', { class: 'muted small' }, 'CC BY-SA recordings are used with attribution; see each source for its licence terms.'),
       h('dl', { class: 'facts' },
         h('dt', {}, 'App version'), h('dd', { 'data-testid': 'app-version' }, app.buildSha),
+        h('dt', {}, 'Site version'), h('dd', { 'data-testid': 'site-version' }, siteVersionText()),
         h('dt', {}, 'Audio bundle built'), h('dd', {}, m.builtAt ? new Date(m.builtAt).toLocaleString() : 'unknown'),
         h('dt', {}, 'Bundle'), h('dd', {}, `${plural(data.words.length, 'word')} · ${plural(data.sentences.length, 'sentence')}`),
         h('dt', {}, 'Storage'), h('dd', {}, state.db.mode === 'idb' ? 'IndexedDB (this browser)' : 'Memory only — not saved')),
+      h('div', { class: 'row gap wrap' },
+        h('button', {
+          class: 'btn', type: 'button', 'data-testid': 'reload-app', 'aria-label': 'Reload the app to get the latest version',
+          onclick: async () => {
+            app.toast('Reloading…', { ms: 1500 });
+            try { const reg = await navigator.serviceWorker?.getRegistration(); await reg?.update(); } catch { /* ignore */ }
+            setTimeout(() => location.reload(), 300);
+          },
+        }, 'Reload app'),
+        h('button', {
+          class: 'btn', type: 'button', 'data-testid': 'check-update', 'aria-label': 'Check for a new version',
+          onclick: async () => {
+            const r = app.checkForUpdate ? await app.checkForUpdate() : { status: 'unknown' };
+            app.toast(r.status === 'changed' ? 'New version found' : r.status === 'offline' ? 'Could not reach the site' : 'You have the latest version');
+          },
+        }, 'Check for updates')),
+      h('p', { class: 'muted small' }, 'A home-screen app resumes where it left off and may keep an old version for a while. The app checks for a new version each time it comes to the foreground and reloads when you are not mid-session.'),
       h('p', { class: 'small' }, h('a', { href: 'https://github.com/mattkleinsmith/chinese-audio-flashcards', target: '_blank', rel: 'noopener' }, 'Source code on GitHub')))));
+}
+
+function siteVersionText() {
+  const v = typeof window !== 'undefined' && window.__clf?.app?.siteVersion ? window.__clf.app.siteVersion() : null;
+  if (!v) return 'unknown';
+  return v.modified ? new Date(v.modified).toLocaleString() : v.etag || 'unknown';
 }

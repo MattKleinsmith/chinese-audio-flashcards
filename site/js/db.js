@@ -26,6 +26,7 @@ export const DEFAULT_SETTINGS = {
   showDefinition: true,
   showTranslation: false,
   showPinyin: false,
+  showSpacing: false,
   showWordModes: false,
   threshold: 0,
   newWords: 15,

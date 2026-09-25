@@ -29,6 +29,8 @@ const SHELL = [
   './js/audio.js',
   './js/pinyin.js',
   './js/util.js',
+  './js/sync.js',
+  './js/update.js',
   './js/screens/home.js',
   './js/screens/study.js',
   './js/screens/import.js',
@@ -105,7 +107,9 @@ async function clipCacheFirst(request) {
 async function networkFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   try {
-    const res = await fetch(request);
+    // GitHub Pages sends max-age=600; revalidate with the server (ETag → cheap 304) so a
+    // reopened home-screen app never keeps serving a stale shell from the HTTP cache.
+    const res = await fetch(new Request(request, { cache: 'no-cache' }));
     if (res.ok) await cache.put(request, res.clone()).catch(() => {});
     return res;
   } catch (err) {

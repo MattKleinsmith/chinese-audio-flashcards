@@ -103,7 +103,8 @@ export function render(root, app) {
       row('Rows in database', `vocab ${dbCounts.vocab} · cards ${dbCounts.cards} · reviews ${dbCounts.reviews}`, 'ls-rows'),
       row('Hack Chinese sync', hc && hc.syncedAt ? `${hc.total || 0} words · export ${fmtTime(Date.parse(hc.syncedAt))} · checked ${fmtTime(hc.checkedAt)}` : 'none yet', 'ls-hc'),
       row('Audio bundle', `${data.words.length} words · ${data.sentences.length} sentences · built ${data.manifest.builtAt || '?'}`, 'ls-bundle'),
-      row('App build', app.buildSha || 'dev', 'ls-build'));
+      row('App build', app.buildSha || 'dev', 'ls-build'),
+      row('Site version', (() => { const v = app.siteVersion?.(); return v ? (v.modified ? new Date(v.modified).toLocaleString() : v.etag) : 'unknown'; })(), 'ls-site'));
 
     // ---- 3. Activity ----------------------------------------------------------------------
     activity.append(row('Today', `${sum.today.reviews} reviews · ${sum.today.cards} cards · ${sum.today.again} again`, 'ls-today'));

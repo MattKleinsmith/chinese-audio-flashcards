@@ -323,7 +323,13 @@ body[data-route="study"] main { max-width: 640px; }
 .badge { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
 
 /* Sentence: tokens wrap; each token is a 2-row grid (hanzi / pinyin), one column per char. */
-.sentence { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 4px; padding: 4px 0; }
+.sentence { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 10px; padding: 4px 0; }
+/* Default: no word gaps, as Chinese is written. "tight" keeps 1.9em columns for the pinyin row
+   but no extra gap; "spaced" is the optional hint. */
+.sentence.unspaced { gap: 6px 0; }
+.sentence.unspaced .tok { padding: 4px 0; grid-auto-columns: auto; }
+.sentence.tight { gap: 6px 0; }
+.sentence.tight .tok { padding: 4px 0; }
 .tok {
   display: inline-grid; grid-template-rows: auto auto; grid-auto-flow: column; grid-auto-columns: minmax(1.9em, auto);
   justify-items: center; padding: 4px 3px; border-radius: 8px; cursor: pointer; min-height: 48px;

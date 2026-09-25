@@ -6,6 +6,7 @@
 import { openDB, getMeta, setMeta } from './db.js';
 import { loadData, DATA_DIR } from './data.js';
 import { syncFromBundle } from './sync.js';
+import { installUpdater } from './update.js';
 import { createAppState } from './state.js';
 import { AudioPlayer } from './audio.js';
 import { h, clear, toast, banner, dismissToast } from './util.js';
@@ -121,13 +122,16 @@ async function boot() {
   app.sync = runSync;
   runSync();
 
+  // Keep home-screen installs fresh (see update.js): re-check the site version on foreground.
+  installUpdater(app, { toast });
+
   // Ask the browser not to evict our IndexedDB/cache under storage pressure (best effort; iOS
   // grants it for installed home-screen apps, Chrome/Firefox for engaged or installed sites).
   try { navigator.storage?.persist?.().catch(() => {}); } catch { /* ignore */ }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') runSync(); });
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    navigator.serviceWorker.register('./sw.js').catch((err) => console.warn('service worker registration failed', err));
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch((err) => console.warn('service worker registration failed', err));
   }
 }
 

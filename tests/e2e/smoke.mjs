@@ -207,6 +207,12 @@ async function main() {
     assert.equal(await page.locator('[data-testid=translation]').count(), 0, 'translation hidden by default');
     assert.equal(await page.locator('[data-testid=sentence] .py').count(), 0, 'pinyin hidden by default');
     assert.equal(await page.locator('[data-testid=sentence] .hz[class*=" t"]').count(), 0, 'no tone colours by default');
+    assert.ok(await page.locator('[data-testid=sentence].unspaced').count() === 1, 'no word spacing by default');
+    await page.click('[data-testid=card-spacing]');
+    await page.waitForSelector('[data-testid=sentence].spaced');
+    await page.click('[data-testid=card-spacing]');
+    await page.waitForSelector('[data-testid=sentence].unspaced');
+    ok('word-spacing chip toggles gaps between words');
     await page.click('[data-testid=card-pinyin]');
     await page.waitForSelector('[data-testid=sentence] .py');
     const tokCount = await page.locator('[data-testid=sentence] .tok').count();
@@ -345,6 +351,27 @@ async function main() {
     assert.equal((await p3.evaluate(() => window.__clf.debug())).vocab, 3);
     ok('unchanged export is a no-op; changed export adds; mirror deletions removes');
     await ctx3.close();
+
+    step('11b. Update detection: changed ETag on foreground → reload offered / performed');
+    const ctx5 = await browser.newContext({ viewport: VIEWPORT, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+    let etag = '"v1"';
+    await ctx5.route('**/index.html', (r) => (r.request().method() === 'HEAD' ? r.fulfill({ status: 200, headers: { etag, 'last-modified': 'Fri, 25 Sep 2026 10:00:00 GMT' } }) : r.continue()));
+    const p5 = await ctx5.newPage();
+    p5.on('pageerror', (e) => errors.push(e.message));
+    await p5.goto(url + '#/settings');
+    await p5.waitForFunction(() => window.__clf?.app?.siteVersion?.());
+    assert.ok(await p5.isVisible('[data-testid=reload-app]'), 'Reload app button');
+    await p5.click('[data-testid=check-update]');
+    assert.match(await toastText(p5), /latest version/);
+    etag = '"v2"';
+    await p5.goto(url + '#/study/sentences'); // mid-session: must not auto-reload
+    await p5.waitForSelector('[data-testid=replay], [data-testid=summary]');
+    const r5 = await p5.evaluate(() => window.__clf.app.checkForUpdate());
+    assert.equal(r5.status, 'changed');
+    assert.match(await p5.textContent('#toast'), /New version available/);
+    assert.ok(await p5.isVisible('#toast .toast-action'), 'Reload action offered while studying');
+    ok('changed site version → Reload offered mid-session (no forced reload)');
+    await ctx5.close();
 
     step('12. No export in the site → silent');
     const ctx4 = await browser.newContext({ viewport: VIEWPORT, isMobile: true, hasTouch: true, serviceWorkers: 'block' });

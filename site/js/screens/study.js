@@ -297,6 +297,7 @@ export function render(root, app, [mode]) {
   }
   const pinyinToggle = () => settingChip('showPinyin', 'Pinyin', 'card-pinyin');
   const translationToggle = () => settingChip('showTranslation', 'Machine translation', 'card-translation');
+  const spacingToggle = () => settingChip('showSpacing', 'Word spacing', 'card-spacing');
 
   /** Hanzi split into per-character spans coloured by the tone of the matching pinyin syllable. */
   function colouredHanzi(hanzi, pinyin, toneColors) {
@@ -327,7 +328,10 @@ export function render(root, app, [mode]) {
     const tc = settings.toneColors && showPy;
     const toks = sentenceTokens(s);
     const vocabSet = new Set(state.vocab.keys());
-    const wrap = h('div', { class: `sentence${showPy ? '' : ' no-pinyin'}`, lang: 'zh-Hans', 'data-testid': 'sentence' });
+    const spaced = settings.showSpacing === true;
+    // Chinese is written without spaces; word gaps are an optional hint (a small gap is kept
+    // when pinyin is shown so neighbouring syllables cannot run into each other).
+    const wrap = h('div', { class: `sentence${showPy ? '' : ' no-pinyin'}${spaced ? ' spaced' : showPy ? ' tight' : ' unspaced'}`, lang: 'zh-Hans', 'data-testid': 'sentence' });
     s.tokens.forEach(([a, b], i) => {
       const text = toks[i];
       const known = isKnownToken(text, vocabSet);
@@ -350,7 +354,7 @@ export function render(root, app, [mode]) {
         ? h('p', { class: 'translation center', 'data-testid': 'translation', lang: 'en' }, s.en)
         : null,
       h('p', { class: 'muted small center' }, 'Tap a word for its meaning'),
-      h('div', { class: 'card-tools' }, pinyinToggle(), s.en ? translationToggle() : null));
+      h('div', { class: 'card-tools' }, pinyinToggle(), spacingToggle(), s.en ? translationToggle() : null));
     box.addEventListener('click', (e) => { if (!e.target.closest('.popover')) closePopover(); });
     return box;
   }
