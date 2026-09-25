@@ -44,8 +44,8 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
 ## 4. Study words
 
 1. Home → **Words** tile → **Start**.
-2. The clip should **play by itself** straight away. If the phone blocks autoplay, the button
-   says *Tap to play*. Tap it and the clip plays.
+2. The clip should **play by itself** straight away. If the phone blocks autoplay, nothing
+   plays until you tap the Play button.
 3. Check the front of the card. It must show **only** the label "Word", a round Play/Pause
    button, a row of transport buttons (↺, −5s, −1s, −.5s, −.1s) and a row of speed chips
    (0.25× to 1.5×). There must be **no** duration, timer, seek bar, progress line or waveform.

@@ -135,7 +135,7 @@ export function render(root, app, [mode]) {
     replayBtn.classList.toggle('blocked', st === 'blocked' || st === 'error');
     replayIcon.textContent = playing ? '❚❚' : '▶︎';
     replayBtn.setAttribute('aria-label', playing ? 'Pause audio' : st === 'paused' ? 'Resume audio' : 'Play audio');
-    replayHint.textContent = st === 'blocked' ? 'Tap to play' : st === 'error' ? 'Audio failed · tap to retry' : st === 'paused' ? 'Paused' : '';
+    replayHint.textContent = st === 'error' ? 'Audio failed · tap to retry' : st === 'paused' ? 'Paused' : '';
   };
   const unsubscribe = player.onChange(setAudioState);
 
@@ -325,7 +325,7 @@ export function render(root, app, [mode]) {
     const box = h('div', { class: 'answer sentence-answer', 'data-testid': 'answer' }, wrap,
       s.en && settings.showTranslation !== false
         ? h('p', { class: 'translation center', 'data-testid': 'translation', lang: 'en' }, s.en,
-          h('span', { class: 'muted small', 'aria-label': 'machine translation' }, ' · MT'))
+          h('span', { class: 'muted small mt-label' }, ' · machine translation'))
         : null,
       h('p', { class: 'muted small center' }, 'Tap a word for its meaning'));
     box.addEventListener('click', (e) => { if (!e.target.closest('.popover')) closePopover(); });

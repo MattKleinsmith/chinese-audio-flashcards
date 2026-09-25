@@ -343,6 +343,7 @@ body[data-route="study"] main { max-width: 640px; }
 .tok .py.t4 { color: var(--t4); }
 .tok .py.t5 { color: var(--t5); }
 .translation { margin: 4px 0 0; font-size: 1.05rem; color: var(--fg); }
+.translation .mt-label { font-size: 0.7rem; white-space: nowrap; }
 .sentence.no-pinyin .tok { grid-template-rows: auto; row-gap: 0; }
 .tok[data-known="false"] .hz { text-decoration: underline dotted var(--muted); text-underline-offset: 5px; text-decoration-thickness: 2px; }
 

@@ -192,7 +192,7 @@ async function main() {
     assert.ok(tokCount >= 1 && hzCount === pyCount && pyCount >= tokCount, `tokens ${tokCount}, hz ${hzCount}, py ${pyCount}`);
     assert.equal(await page.locator('[data-testid=sentence] ruby').count(), 0, 'grid layout, not <ruby>');
     const enText = (await page.textContent('[data-testid=translation]')).trim();
-    assert.match(enText, /[A-Za-z]{2,}.*· MT$/, `sentence translation shown: ${enText}`);
+    assert.match(enText, /[A-Za-z]{2,}.*· machine translation$/, `sentence translation shown: ${enText}`);
     ok(`translation shown: ${enText.slice(0, 50)}`);
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     const copied = await page.evaluate(async () => {
@@ -267,7 +267,7 @@ async function main() {
     assert.ok(cached >= 1, `clips-v1 has ${cached} entries`);
     ok(`service worker ready; clips-v1 holds ${cached} clips`);
 
-    step('10. Autoplay blocked → "Tap to play" (NotAllowedError fallback)');
+    step('10. Autoplay blocked → button stays a plain Play (NotAllowedError fallback)');
     const ctx2 = await browser.newContext({ viewport: VIEWPORT, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
     await ctx2.addInitScript(() => {
       HTMLMediaElement.prototype.play = function play() { return Promise.reject(new DOMException('blocked', 'NotAllowedError')); };
@@ -280,8 +280,9 @@ async function main() {
     await toastText(p2);
     await p2.goto(url + '#/study/words');
     await p2.waitForSelector('[data-testid=replay].blocked');
-    assert.match(await p2.textContent('[data-testid=replay]'), /Tap to play/);
-    ok('replay shows "Tap to play" when play() is rejected');
+    assert.doesNotMatch(await p2.textContent('[data-testid=replay]'), /Tap to play|Paused|failed/);
+    assert.equal(await p2.getAttribute('[data-testid=replay]', 'aria-label'), 'Play audio');
+    ok('blocked autoplay leaves a plain Play button with no hint text');
     await ctx2.close();
 
     step('11. Automatic Hack Chinese sync from data/user/*');
