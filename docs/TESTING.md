@@ -43,7 +43,7 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
 
 ## 4. Study words
 
-1. Home → **Words** tile → **Start**.
+1. Settings → turn on *Show Words and Mixed modes* (Home shows only Sentences by default). Home → **Words** tile → **Start**.
 2. The clip should **play by itself** straight away. If the phone blocks autoplay, nothing
    plays until you tap the Play button.
 3. Check the front of the card. It must show **only** the label "Word", a round Play/Pause
