@@ -14,6 +14,7 @@ import * as study from './screens/study.js';
 import * as importScreen from './screens/import.js';
 import * as vocab from './screens/vocab.js';
 import * as settings from './screens/settings.js';
+import * as activity from './screens/activity.js';
 
 const ROUTES = [
   { re: /^#?\/?$/, screen: home, name: 'home' },
@@ -21,6 +22,7 @@ const ROUTES = [
   { re: /^#\/import$/, screen: importScreen, name: 'import' },
   { re: /^#\/vocab$/, screen: vocab, name: 'vocab' },
   { re: /^#\/settings$/, screen: settings, name: 'settings' },
+  { re: /^#\/activity$/, screen: activity, name: 'activity' },
 ];
 
 const root = document.getElementById('app');

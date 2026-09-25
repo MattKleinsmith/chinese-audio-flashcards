@@ -162,6 +162,18 @@ async function main() {
     await page.waitForFunction(() => /^1\//.test(document.querySelector('[data-testid=session-count]')?.textContent || ''));
     ok('graded Good; session count 1/…');
 
+    step('4b. Local data & activity screen');
+    await page.goto(url + '#/settings');
+    await page.click('[data-testid=open-activity]');
+    await page.waitForSelector('[data-testid=ls-log] li');
+    assert.match(await page.textContent('[data-testid=ls-db]'), /IndexedDB/);
+    assert.match(await page.textContent('[data-testid=ls-reviews]'), /Reviews logged\s*1$/);
+    assert.match(await page.textContent('[data-testid=ls-today]'), /1 reviews · 1 cards · 0 again/);
+    assert.match(await page.textContent('[data-testid=ls-vocab]'), /Vocab words/);
+    assert.match(await page.textContent('[data-testid=ls-log] li'), /good/);
+    assert.match(await page.textContent('[data-testid=ls-usage]'), /of/);
+    ok('Local data screen shows DB mode, counts, today, and the review log');
+
     step('5. Reload → progress persisted');
     await page.reload();
     await page.waitForFunction(() => window.__clf && window.__clf.debug);

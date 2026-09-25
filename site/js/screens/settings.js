@@ -137,6 +137,11 @@ export function render(root, app) {
         }, 'Export everything'),
         h('label', { class: 'btn', for: 'restore-file', 'data-testid': 'restore-btn', 'aria-label': 'Restore from backup' }, 'Restore…', restoreInput))),
 
+    h('section', { class: 'card' },
+      h('h2', {}, 'Local data & activity'),
+      h('p', { class: 'muted small' }, 'See what is stored in this browser, how big it is, and your recent reviews. Useful to confirm your progress is still here.'),
+      h('a', { class: 'btn block', href: '#/activity', 'data-testid': 'open-activity', 'aria-label': 'Open local data and activity' }, 'Local data & activity')),
+
     h('section', { class: 'card danger' },
       h('h2', {}, 'Danger zone'),
       h('div', { class: 'row gap wrap' },
