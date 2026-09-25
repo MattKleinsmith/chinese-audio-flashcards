@@ -1,0 +1,5 @@
+# Pipeline dependencies (install into a venv; system pip cannot build jieba on Debian).
+jieba==0.42.1
+pypinyin==0.55.0
+imageio-ffmpeg==0.6.0
+requests>=2.28
