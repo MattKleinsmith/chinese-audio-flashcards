@@ -3,6 +3,7 @@
 
 import { h, downloadJSON, ymd, readFileText, plural } from '../util.js';
 import { RATES } from '../audio.js';
+import { lastSync, describeSync } from '../sync.js';
 
 function toggle(app, key, label, hint) {
   const input = h('input', {
@@ -79,6 +80,12 @@ export function render(root, app) {
     s.synthetic ? h('span', { class: 'badge' }, 'TTS') : null));
   const hasCedict = (m.sources || []).some((s) => /cedict/i.test(`${s.id} ${s.name}`));
 
+  const syncStatus = h('p', { class: 'small', 'data-testid': 'sync-status' }, 'Checking…');
+  lastSync(app).then((rec) => {
+    syncStatus.textContent = !rec || rec.status === 'none' ? 'No export in the site yet.'
+      : rec.status === 'error' ? `Last check failed: ${rec.message}` : describeSync(rec) || 'Not synced yet.';
+  });
+
   root.append(h('div', { class: 'screen settings' },
     h('h1', {}, 'Settings'),
 
@@ -97,6 +104,25 @@ export function render(root, app) {
       number(app, 'sessionSize', 'Cards per session', 1, 500),
       select(app, 'dayStart', 'Day starts at', hours),
       themeSelect()),
+
+    h('section', { class: 'card', 'data-testid': 'hc-sync' },
+      h('h2', {}, 'Hack Chinese sync'),
+      h('p', { class: 'muted small' },
+        'A daily GitHub Action downloads your “all studied words” export into this site; the app adds any new words automatically on open. ',
+        'Set the HC_EMAIL and HC_PASSWORD repository secrets to enable it (see the README).'),
+      syncStatus,
+      h('div', { class: 'row gap wrap' },
+        h('button', {
+          class: 'btn', type: 'button', 'data-testid': 'sync-now', 'aria-label': 'Sync from Hack Chinese now',
+          onclick: async () => {
+            syncStatus.textContent = 'Checking…';
+            const r = await app.sync(true);
+            if (r.status === 'none') syncStatus.textContent = 'No export in the site yet. The GitHub Action has not run successfully.';
+            else if (r.status === 'error') syncStatus.textContent = `Sync failed: ${r.message}`;
+            else syncStatus.textContent = `${describeSync(r)}${r.status === 'synced' ? ` · +${r.added || 0}${r.removed ? ` −${r.removed}` : ''}` : ''}`;
+          },
+        }, 'Sync now')),
+      toggle(app, 'mirrorHcDeletions', 'Mirror deletions', 'Also remove words that disappear from the Hack Chinese export')),
 
     h('section', { class: 'card' },
       h('h2', {}, 'Backup'),

@@ -258,6 +258,53 @@ async function main() {
     ok('replay shows "Tap to play" when play() is rejected');
     await ctx2.close();
 
+    step('11. Automatic Hack Chinese sync from data/user/*');
+    const ctx3 = await browser.newContext({ viewport: VIEWPORT, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+    let sha = 'a'.repeat(64);
+    let csv = '\ufeffsimplified,pinyin,definition\r\n学习,xué xí,to study\r\n朋友,péng you,friend\r\n"图书馆","tú shū guǎn","library"\r\n';
+    await ctx3.route('**/data/user/sync.json*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ source: 'hackchinese', syncedAt: new Date().toISOString(), rows: 4, sha256: sha }) }));
+    await ctx3.route('**/data/user/hackchinese.csv*', (r) => r.fulfill({ status: 200, contentType: 'text/csv; charset=utf-8', body: csv }));
+    const p3 = await ctx3.newPage();
+    p3.on('pageerror', (e) => errors.push(e.message));
+    await p3.goto(url + '#/');
+    const t3 = await toastText(p3);
+    assert.match(t3, /Hack Chinese: \+3 new words/);
+    await p3.waitForFunction(() => document.querySelector('[data-testid=stat-vocab]')?.textContent.trim() === '3');
+    const dbg3 = await p3.evaluate(() => window.__clf.debug());
+    assert.equal(dbg3.vocab, 3);
+    assert.match(await p3.textContent('[data-testid=home-sync]'), /Hack Chinese: 3 words · export just now/);
+    ok('3 words auto-imported from the mocked export; home shows sync status');
+    // Same export again (same sha) → no re-import; a changed export with one word gone and one
+    // added → +1 by default (no deletions) and −1 once "mirror deletions" is on.
+    await p3.goto(url + '#/settings');
+    await p3.click('[data-testid=sync-now]');
+    await p3.waitForFunction(() => /checked just now/.test(document.querySelector('[data-testid=sync-status]')?.textContent || ''));
+    assert.equal((await p3.evaluate(() => window.__clf.debug())).vocab, 3);
+    sha = 'b'.repeat(64);
+    csv = 'simplified\n学习\n朋友\n老师\n';
+    await p3.click('[data-testid=sync-now]');
+    await p3.waitForFunction(() => /\+1/.test(document.querySelector('[data-testid=sync-status]')?.textContent || ''));
+    assert.equal((await p3.evaluate(() => window.__clf.debug())).vocab, 4);
+    await p3.check('[data-testid=set-mirrorHcDeletions]');
+    sha = 'c'.repeat(64);
+    await p3.click('[data-testid=sync-now]');
+    await p3.waitForFunction(() => /−1/.test(document.querySelector('[data-testid=sync-status]')?.textContent || ''));
+    assert.equal((await p3.evaluate(() => window.__clf.debug())).vocab, 3);
+    ok('unchanged export is a no-op; changed export adds; mirror deletions removes');
+    await ctx3.close();
+
+    step('12. No export in the site → silent');
+    const ctx4 = await browser.newContext({ viewport: VIEWPORT, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+    await ctx4.route('**/data/user/*', (r) => r.fulfill({ status: 404, body: 'not found' }));
+    const p4 = await ctx4.newPage();
+    p4.on('pageerror', (e) => errors.push(e.message));
+    await p4.goto(url + '#/');
+    await p4.waitForSelector('text=Import from Hack Chinese');
+    await p4.waitForTimeout(500);
+    assert.equal(await p4.locator('[data-testid=home-sync]').count(), 0, 'no sync line without an export');
+    ok('no export file → nothing shown, no errors');
+    await ctx4.close();
+
     assert.deepEqual(errors, [], 'no uncaught page errors');
     ok('no uncaught page errors');
     console.log(`\ne2e smoke: all ${checks} checks passed`);

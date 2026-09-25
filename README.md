@@ -33,6 +33,69 @@ a few reps while waiting in line.
 On a phone, use *Add to Home Screen* so it runs full-screen. The full manual test script is in
 [docs/TESTING.md](docs/TESTING.md).
 
+## Automatic sync from Hack Chinese
+
+Hack Chinese has no read API, but it has a CSV export of every word you have studied at
+`https://www.hackchinese.com/all-studied-words.csv` (Settings → *Export All Learned Words*).
+`sync/hackchinese_sync.py` signs in with your credentials, downloads it, and writes
+`site/data/user/hackchinese.csv` plus `site/data/user/sync.json`. The app fetches those on every
+open (and when it returns to the foreground) and imports any new words with the same parser as a
+manual import, so the phone never needs the import screen. Words are only added; turn on
+*Mirror deletions* in Settings to also remove words that leave the export.
+
+To run it daily, add the workflow below as `.github/workflows/hackchinese-sync.yml` and add two
+repository secrets, `HC_EMAIL` and `HC_PASSWORD` (Settings → Secrets and variables → Actions).
+It runs at 03:17 UTC and on demand from the Actions tab. Note that the word list is committed to
+this repository, so in a public repo your vocabulary list is public.
+
+```yaml
+name: Sync vocab from Hack Chinese
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+permissions: { contents: write, actions: write }
+concurrency: { group: hackchinese-sync, cancel-in-progress: false }
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install requests
+      - name: Download the export
+        env:
+          HC_EMAIL: ${{ secrets.HC_EMAIL }}
+          HC_PASSWORD: ${{ secrets.HC_PASSWORD }}
+        run: python sync/hackchinese_sync.py --out-dir site/data/user
+      - name: Commit if the word list changed
+        id: commit
+        run: |
+          git config user.name "hackchinese-sync[bot]"
+          git config user.email "hackchinese-sync@users.noreply.github.com"
+          git add site/data/user/hackchinese.csv
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git add site/data/user/sync.json
+            git commit -m "Sync vocab from Hack Chinese"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      # Commits made with GITHUB_TOKEN do not trigger other workflows, so kick the Pages deploy.
+      # Harmless when Pages is set to "Deploy from a branch", which rebuilds on its own.
+      - name: Redeploy the site
+        if: steps.commit.outputs.changed == 'true'
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: gh workflow run pages.yml --ref "${GITHUB_REF_NAME}" || true
+```
+
+Offline alternative (no credentials stored anywhere): export the CSV yourself and run
+`python sync/hackchinese_sync.py --csv ~/Downloads/all-studied-words.csv`, then commit
+`site/data/user/`. Or just commit the export as `site/data/user/hackchinese.csv` and a
+`sync.json` next to it; the app only needs those two files.
+
 ## GitHub Pages
 
 `.github/workflows/pages.yml` deploys `site/` on every push to `main` (and to the dev branch)

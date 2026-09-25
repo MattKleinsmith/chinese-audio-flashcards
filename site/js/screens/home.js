@@ -2,6 +2,7 @@
 // tiles (Words / Sentences / Mixed) with due · new counts and small vocab stats. PLAN §5.2.
 
 import { h } from '../util.js';
+import { lastSync, describeSync } from '../sync.js';
 
 export const MODES = [
   { id: 'words', label: 'Words', zh: '词', hint: 'Single words, one speaker' },
@@ -61,6 +62,10 @@ export function render(root, app) {
     stat(state.vocab.size, 'vocab words', 'stat-vocab'),
     stat(stats.wordsWithAudio, 'with audio', 'stat-audio'),
     stat(stats.sentencesUnlocked, 'sentences unlocked', 'stat-sentences')));
+
+  const syncLine = h('p', { class: 'muted small', 'data-testid': 'home-sync' }, '');
+  lastSync(app).then((rec) => { const t = describeSync(rec); if (t) syncLine.textContent = t; else syncLine.remove(); });
+  screen.append(syncLine);
 
   screen.append(h('div', { class: 'row gap' },
     h('a', { class: 'btn', href: '#/import', 'aria-label': 'Import more words' }, '+ Import words'),

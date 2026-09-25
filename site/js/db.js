@@ -29,6 +29,7 @@ export const DEFAULT_SETTINGS = {
   newSentences: 10,
   sessionSize: 20,
   dayStart: 4,
+  mirrorHcDeletions: false,
 };
 
 const req2p = (req) => new Promise((resolve, reject) => {

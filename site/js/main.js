@@ -5,6 +5,7 @@
 
 import { openDB, getMeta, setMeta } from './db.js';
 import { loadData, DATA_DIR } from './data.js';
+import { syncFromBundle } from './sync.js';
 import { createAppState } from './state.js';
 import { AudioPlayer } from './audio.js';
 import { h, clear, toast, banner, dismissToast } from './util.js';
@@ -105,6 +106,19 @@ async function boot() {
 
   window.addEventListener('hashchange', route);
   route();
+
+  // Automatic Hack Chinese sync: on open and whenever the app returns to the foreground.
+  const runSync = async (force = false) => {
+    const r = await syncFromBundle(app, { force, dataDir: DATA_DIR });
+    if (r.status === 'synced' && (r.added || r.removed)) {
+      toast(`Hack Chinese: ${r.added ? `+${r.added} new word${r.added === 1 ? '' : 's'}` : ''}${r.added && r.removed ? ', ' : ''}${r.removed ? `−${r.removed} removed` : ''}`);
+      if ((location.hash || '#/') === '#/' || location.hash.startsWith('#/vocab')) route();
+    }
+    return r;
+  };
+  app.sync = runSync;
+  runSync();
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') runSync(); });
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     navigator.serviceWorker.register('./sw.js').catch((err) => console.warn('service worker registration failed', err));
