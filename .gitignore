@@ -1,0 +1,10 @@
+node_modules/
+pipeline/work/
+pipeline/.venv/
+.venv/
+__pycache__/
+*.pyc
+site/data-private/
+test-results/
+playwright-report/
+.DS_Store
