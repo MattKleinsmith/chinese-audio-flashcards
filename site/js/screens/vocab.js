@@ -91,12 +91,13 @@ export function render(root, app) {
   }
 
   function row(v, w, status) {
+    const hasAudio = !!(w && w.clips && w.clips.length);
     const li = h('li', { class: 'vocab-row', 'data-testid': 'vocab-row' },
       h('span', { class: 'hz', lang: 'zh-Hans' }, v.s),
       h('span', { class: 'grow' },
         pinyinEl(v.p || (w && w.p) || '', { toneColors: state.settings.toneColors }),
         h('span', { class: 'muted small def' }, glossList(w ? w.d : v.d)[0] || glossList(v.d)[0] || '')),
-      h('span', { class: `audio-flag${w ? ' has' : ''}`, title: w ? 'Has audio' : 'No audio', 'aria-label': w ? 'Has audio' : 'No audio' }, '♪'),
+      h('span', { class: `audio-flag${hasAudio ? ' has' : ''}`, title: hasAudio ? 'Has audio' : 'No audio', 'aria-label': hasAudio ? 'Has audio' : 'No audio' }, '♪'),
       h('span', { class: `chip status ${status}` }, status === 'none' ? '—' : status),
       h('button', { class: 'icon-btn small', type: 'button', 'aria-label': `Delete ${v.s}`, onclick: () => remove(v) }, '✕'));
     // Long-press (600 ms) also deletes, for thumb use.

@@ -21,12 +21,14 @@ jobs:
           HACKCHINESE_EMAIL: ${{ secrets.HACKCHINESE_EMAIL }}
           HACKCHINESE_PASSWORD: ${{ secrets.HACKCHINESE_PASSWORD }}
         run: python sync/hackchinese_sync.py --out-dir site/data/user
+      - name: Refresh the dictionary for words without audio
+        run: python pipeline/build_dict.py
       - name: Commit if the word list changed
         id: commit
         run: |
           git config user.name "hackchinese-sync[bot]"
           git config user.email "hackchinese-sync@users.noreply.github.com"
-          git add site/data/user/hackchinese.csv
+          git add site/data/user/hackchinese.csv site/data/dict.json site/data/manifest.json
           if git diff --cached --quiet; then
             echo "no change in the word list"; echo "changed=false" >> "$GITHUB_OUTPUT"
           else

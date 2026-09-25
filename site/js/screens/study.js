@@ -382,7 +382,10 @@ export function render(root, app, [mode]) {
         h('span', { class: 'pop-hz', lang: 'zh-Hans' }, text),
         pinyinEl(pinyin, { toneColors: settings.toneColors }),
         h('button', { class: 'icon-btn small', type: 'button', 'aria-label': 'Close', onclick: (e) => { e.stopPropagation(); closePopover(); } }, '✕')),
-      defs.length ? h('ul', { class: 'defs' }, defs.slice(0, 3).map((d) => h('li', {}, d))) : h('p', { class: 'muted' }, 'no definition'),
+      defs.length ? h('ul', { class: 'defs' }, defs.slice(0, 3).map((d) => h('li', {}, d)))
+        : w && w.charGlosses
+          ? h('ul', { class: 'defs chars' }, w.charGlosses.map((cg) => h('li', {}, h('span', { lang: 'zh-Hans' }, cg.c), ' ', pinyinEl(cg.p, { toneColors: settings.toneColors, className: 'pinyin small' }), cg.d.length ? ` — ${cg.d.join('; ')}` : '')))
+          : h('p', { class: 'muted' }, 'no definition'),
       h('div', { class: 'pop-foot' }, w && w.hsk ? h('span', { class: 'badge' }, `HSK ${w.hsk}`) : h('span'), addBtn));
     cardArea.append(popover);
     // Anchor below the token, clamped inside the card area.

@@ -41,7 +41,7 @@ const SHELL = [
   './icons/icon-192.png',
   './icons/icon-512.png',
 ];
-const DATA = ['./data/manifest.json', './data/words.json', './data/sentences.json'];
+const DATA = ['./data/manifest.json', './data/words.json', './data/sentences.json', './data/dict.json'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {

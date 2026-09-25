@@ -275,6 +275,11 @@ each token up in `words.json` by simplified string **and** in the user's vocab; 
 characters/punctuation (`的 了 是 在 我 你 他 她 它 们 不 吗 呢 吧 啊 和 有 这 那 也 就 都 很 会 要 说`
 … the exact list lives in `site/js/queue.js` as `ALWAYS_KNOWN`; keep it ≤40 items).
 
+### 4.3b `site/data/dict.json` (optional, `manifest.files.dict`)
+`{ "<simplified>": { "t"?: "<traditional>", "p": "<numeric pinyin>", "d"?: ["gloss", ...] } }` for
+words without audio (sentence tokens, characters, HSK words lacking a clip, synced Hack Chinese
+words). The app's lookup order is words.json → dict.json → composed from single characters.
+
 ### 4.4 Size budget for the committed demo bundle
 - Word clips: all audio-cmn words with a CEDICT or HSK match, re-encoded at 40 kb/s
   (≈ 6 KB each ≈ 50 MB).

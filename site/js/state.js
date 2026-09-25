@@ -60,7 +60,7 @@ export class AppState {
   /** SRS status label for a vocab word: none | new | learning | review | suspended. */
   wordStatus(s) {
     const w = this.wordFor(s);
-    if (!w) return 'none';
+    if (!w || !(w.clips || []).length) return 'none'; // dictionary-only words have no cards
     const card = this.cards.get(`word:${w.id}`);
     if (card && card.suspended) return 'suspended';
     if (!(w.clips || []).some((c) => !this.suspendedClips.has(c.id || c.file))) return 'suspended';
@@ -89,7 +89,7 @@ export class AppState {
       this.vocab.set(row.s, row);
     }
     if (rows.length) await safe(this.db.putMany('vocab', rows), 'save vocab');
-    const withAudio = rows.filter((r) => this.data.lookup(r.s, r.t)).length;
+    const withAudio = rows.filter((r) => this.data.hasAudio(r.s, r.t)).length;
     const unlocked = Math.max(0, this.stats().sentencesUnlocked - before);
     return { added: rows.length, withAudio, unlocked };
   }

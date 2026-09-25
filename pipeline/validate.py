@@ -242,8 +242,17 @@ def validate(data_dir: Path) -> tuple[Report, dict, list, list]:
         if set(s) != SOURCE_KEYS:
             rep.err(f"manifest source keys {sorted(s)}")
     files = manifest.get("files", {})
-    if files != {"words": "words.json", "sentences": "sentences.json"}:
+    if {k: v for k, v in files.items() if k != "dict"} != {"words": "words.json", "sentences": "sentences.json"}:
         rep.err(f"manifest files {files}")
+    if "dict" in files:
+        dp = data_dir / files["dict"]
+        if not dp.exists():
+            rep.err(f"manifest files.dict {files['dict']} missing")
+        else:
+            d = json.loads(dp.read_text(encoding="utf-8"))
+            bad = [k for k, v in d.items() if not isinstance(v, dict) or not isinstance(v.get("p"), str)]
+            if bad:
+                rep.err(f"dict.json: {len(bad)} entries without a pinyin string, e.g. {bad[:3]}")
     words = load_min_json(data_dir / files.get("words", "words.json"), rep)
     sentences = load_min_json(data_dir / files.get("sentences", "sentences.json"), rep)
     counts = manifest.get("counts", {})

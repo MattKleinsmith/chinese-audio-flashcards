@@ -52,6 +52,15 @@ pipeline/.venv/bin/python pipeline/translate.py
 Quality is good enough for a gloss on short sentences but not perfect; the app labels it "MT".
 Better translations (e.g. an LLM) can be plugged in as another `--provider` later.
 
+`build_dict.py` writes `site/data/dict.json`: CC-CEDICT pinyin and glosses for words that have
+no audio entry (sentence tokens and characters, HSK words without a clip, and the synced Hack
+Chinese words), so the app can always show a reading. The daily sync workflow re-runs it after
+each export so newly studied words get entries too:
+
+```sh
+pipeline/.venv/bin/python pipeline/build_dict.py
+```
+
 `build.py` also downloads CC-CEDICT and sparse-clones `hugolpz/audio-cmn` (64k/hsk + lists)
 into `pipeline/work/` (git-ignored) if they are missing. A clean build takes about 2 minutes on
 4 cores; re-runs reuse every clip and the AISHELL-3 stream index and finish in ~20 s. `--force`
