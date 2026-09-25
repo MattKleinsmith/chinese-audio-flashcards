@@ -35,7 +35,7 @@ curl -r 0-3000000000 -o pipeline/work/aishell3_head.tgz \
      https://openslr.elda.org/resources/93/data_aishell3.tgz
 
 pipeline/.venv/bin/python pipeline/build.py \
-    --aishell3-tar pipeline/work/aishell3_head.tgz --max-sentences 2000
+    --aishell3-tar pipeline/work/aishell3_head.tgz --max-sentences 2000 --min-sentence-ms 1000
 pipeline/.venv/bin/python pipeline/validate.py --trim-check 40
 pipeline/.venv/bin/python -m unittest discover -s pipeline/tests -v
 ```
