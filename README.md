@@ -20,7 +20,7 @@ a few reps while waiting in line.
    automatically, and you can fix the mapping in the preview. Imports add up across files,
    and importing the same file again changes nothing.
    No export? Use **Quick start with HSK levels**.
-2. **Study**: choose *Words*, *Sentences* or *Mixed*. The clip plays automatically. The big
+2. **Study**: tap *Start* on Sentences (Words and Mixed modes can be enabled in Settings). The clip plays automatically. The big
    button pauses and resumes; the row under it restarts the clip or jumps back 5 s, 1 s, 0.5 s
    or 0.1 s (tap repeatedly for fine control); the chips set the speed from 0.25× to 1.5× with
    the pitch preserved. Tap *Show answer* to see the card, then grade yourself. Keyboard: space

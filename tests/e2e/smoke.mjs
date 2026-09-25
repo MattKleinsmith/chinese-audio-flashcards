@@ -96,11 +96,17 @@ async function main() {
     const t2 = await toastText(page, t1);
     ok(`toast: "${t2.trim()}"`);
     await page.goto(url + '#/');
+    await page.waitForSelector('[data-testid=tile-sentences]');
+    assert.equal(await page.locator('[data-testid=tile-words], [data-testid=tile-mixed]').count(), 0, 'Words/Mixed hidden by default');
+    await page.goto(url + '#/settings');
+    await page.check('[data-testid=set-showWordModes]');
+    await page.goto(url + '#/');
     await page.waitForSelector('[data-testid=tile-words]');
+    assert.equal(await page.locator('[data-testid=tile-mixed]').count(), 1, 'Mixed tile shown once enabled');
     const due = Number(await page.textContent('[data-testid=due-words]'));
     const fresh = Number(await page.textContent('[data-testid=new-words]'));
     assert.ok(due + fresh > 0, `words due+new = ${due}+${fresh}`);
-    ok(`Words tile: ${due} due · ${fresh} new`);
+    ok(`only Sentences by default; after enabling in Settings, Words tile: ${due} due · ${fresh} new`);
 
     step('4. Study a word card');
     await page.click('[data-testid=start-words]');

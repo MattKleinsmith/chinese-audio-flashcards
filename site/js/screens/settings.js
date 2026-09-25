@@ -92,6 +92,7 @@ export function render(root, app) {
     h('section', { class: 'card' },
       h('h2', {}, 'Study'),
       toggle(app, 'autoplay', 'Autoplay audio', 'Play each clip when the card appears'),
+      toggle(app, 'showWordModes', 'Show Words and Mixed modes', 'Off = only Sentences on the home screen'),
       select(app, 'rate', 'Playback speed', RATES.map((r) => [r, r === 1 ? '1× (natural speed)' : `${r}× — pitch preserved`]), {
         parse: Number, onChange: (v) => app.player.setRate(v),
       }),

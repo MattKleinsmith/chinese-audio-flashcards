@@ -33,7 +33,9 @@ export function render(root, app) {
   const stats = state.stats();
   const last = lastMode();
   const tiles = h('section', { class: 'tiles', 'aria-label': 'Study modes' });
-  for (const m of MODES) {
+  // Sentences are the main thing; Words and Mixed are hidden unless enabled in Settings.
+  const visibleModes = state.settings.showWordModes ? MODES : MODES.filter((m) => m.id === 'sentences');
+  for (const m of visibleModes) {
     const c = stats[m.id];
     const empty = c.due + c.new === 0;
     tiles.append(h('div', { class: `tile${m.id === last ? ' last' : ''}`, 'data-testid': `tile-${m.id}` },
