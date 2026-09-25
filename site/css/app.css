@@ -14,11 +14,11 @@
   --accent-soft: #fde7da;
   --danger: #b91c1c;
   --ok: #15803d;
-  --t1: #dc2626; /* tone colours: 1 red, 2 orange, 3 green, 4 blue, 5 grey */
-  --t2: #d97706;
-  --t3: #16a34a;
-  --t4: #2563eb;
-  --t5: #78716c;
+  --t1: #e30000; /* tone colours: Pleco scheme (also used by Hack Chinese): 1 red, 2 green, 3 blue, 4 purple, 5 grey */
+  --t2: #02b31c;
+  --t3: #1510f0;
+  --t4: #8900bf;
+  --t5: #777777;
   --g-again: #dc2626;
   --g-hard: #d97706;
   --g-good: #16a34a;
@@ -43,11 +43,11 @@
     --accent-soft: #3b2415;
     --danger: #f87171;
     --ok: #4ade80;
-    --t1: #f87171;
-    --t2: #fbbf24;
-    --t3: #4ade80;
-    --t4: #60a5fa;
-    --t5: #a8a29e;
+    --t1: #ff5a5a; /* Pleco hues, lightened for dark backgrounds */
+    --t2: #35d64d;
+    --t3: #6b8cff;
+    --t4: #c86dff;
+    --t5: #9a9a9a;
     --shadow: 0 1px 2px rgb(0 0 0 / 40%);
   }
 }
@@ -63,11 +63,11 @@
   --accent-soft: #3b2415;
   --danger: #f87171;
   --ok: #4ade80;
-  --t1: #f87171;
-  --t2: #fbbf24;
-  --t3: #4ade80;
-  --t4: #60a5fa;
-  --t5: #a8a29e;
+  --t1: #ff5a5a; /* Pleco hues, lightened for dark backgrounds */
+  --t2: #35d64d;
+  --t3: #6b8cff;
+  --t4: #c86dff;
+  --t5: #9a9a9a;
   --shadow: 0 1px 2px rgb(0 0 0 / 40%);
   color-scheme: dark;
 }
@@ -204,7 +204,7 @@ input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent);
 .chip.on { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 .chip.status { min-height: 0; padding: 2px 8px; font-size: 0.75rem; cursor: default; flex: none; }
 .chip.status.review { color: var(--ok); }
-.chip.status.learning { color: var(--t2); }
+.chip.status.learning { color: var(--g-hard); }
 .chip.status.suspended { color: var(--danger); }
 .vocab-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .vocab-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); min-height: 56px; user-select: none; }

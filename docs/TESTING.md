@@ -53,7 +53,7 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
    ring shows while it plays.
 5. Tap **Show answer**, or tap anywhere on the lower half of the card. Check the back:
    - large Hanzi
-   - tone-coloured pinyin (1 red, 2 orange, 3 green, 4 blue, neutral grey)
+   - tone-coloured pinyin in the Pleco / Hack Chinese scheme (1 red, 2 green, 3 blue, 4 purple, neutral grey)
    - up to 3 definitions
    - an HSK badge
 6. Tap Replay on the back. It still plays.

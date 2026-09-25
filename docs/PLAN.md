@@ -361,7 +361,7 @@ characters/punctuation (`的 了 是 在 我 你 他 她 它 们 不 吗 呢 吧
     card reveals.
 - **Back**:
   - Word card: hanzi (very large, ≥ 56 px), pinyin with tone marks beneath (tone colours if
-    enabled: 1 red, 2 orange/yellow, 3 green, 4 blue, 5 grey — standard Pleco-ish scheme),
+    enabled: 1 red, 2 green, 3 blue, 4 purple, 5 grey — the Pleco scheme, which Hack Chinese also uses),
     definition lines (max 3), HSK badge. Traditional shown small if different and setting on.
   - Sentence card: the sentence rendered as tokens (each token a `<span class="tok">` with
     `data-known="true|false"`). Under each character, its pinyin (from `cp`), in a
