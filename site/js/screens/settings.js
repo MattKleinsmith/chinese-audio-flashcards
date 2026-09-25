@@ -2,6 +2,7 @@
 // (audio sources with licences and links, app version, data build date). PLAN §5.8.
 
 import { h, downloadJSON, ymd, readFileText, plural } from '../util.js';
+import { RATES } from '../audio.js';
 
 function toggle(app, key, label, hint) {
   const input = h('input', {
@@ -84,7 +85,7 @@ export function render(root, app) {
     h('section', { class: 'card' },
       h('h2', {}, 'Study'),
       toggle(app, 'autoplay', 'Autoplay audio', 'Play each clip when the card appears'),
-      select(app, 'rate', 'Playback speed', [[1, '1.0× (natural)'], [0.85, '0.85× — not natural speed']], {
+      select(app, 'rate', 'Playback speed', RATES.map((r) => [r, r === 1 ? '1× (natural speed)' : `${r}× — pitch preserved`]), {
         parse: Number, onChange: (v) => app.player.setRate(v),
       }),
       toggle(app, 'toneColors', 'Tone colours'),

@@ -1,8 +1,10 @@
 // screens/study.js — the card UI (PLAN §5.4).
-// Front: big Replay button + "Word" / "Sentence · <gender>" label + Show answer.
+// Front: big Play/Pause button, a transport row (restart, rewind 5 s / 1 s / 0.5 s / 0.1 s),
+// a playback-speed row, the "Word" / "Sentence · <gender>" label and Show answer.
 // Back: word card (hanzi, tone-coloured pinyin, definitions, HSK badge) or sentence card
 // (tappable tokens with per-character pinyin in a two-row CSS grid, definition popover,
-// + Add to vocab), smaller Replay, and the Again / Hard / Good / Easy grade bar.
+// + Add to vocab), the same transport controls (smaller), and the Again / Hard / Good / Easy
+// grade bar.
 //
 // HARD REQUIREMENT: no elapsed time, no progress bar, no duration and no waveform for the
 // audio, anywhere on this screen. The only audio UI is the Replay button (with a pulsing ring
@@ -10,7 +12,7 @@
 
 import { h, clear, pinyinEl, glossList, formatDuration, plural, dismissToast } from '../util.js';
 import { gradeCard, previewIntervals } from '../scheduler.js';
-import { preload } from '../audio.js';
+import { preload, RATES, REWIND_STEPS } from '../audio.js';
 import { sentenceTokens, isKnownToken, clipKey } from '../queue.js';
 import { numericToMarks, toneOf } from '../pinyin.js';
 import { MODES } from './home.js';
@@ -69,23 +71,70 @@ export function render(root, app, [mode]) {
   };
   document.addEventListener('click', onDocClick);
 
-  // ---- Replay button --------------------------------------------------------------------------
+  // ---- Transport: play/pause, restart, rewind steps, speed --------------------------------------
+  // The only audio UI. Relative rewinds and a speed choice are fine; elapsed time, duration,
+  // a seek bar or a waveform are not (see HARD REQUIREMENT above).
   const replayHint = h('span', { class: 'replay-hint', 'aria-hidden': 'true' });
+  const replayIcon = h('span', { class: 'replay-icon', 'aria-hidden': 'true' }, '▶︎');
   const replayBtn = h('button', {
-    class: 'replay', type: 'button', 'data-testid': 'replay', 'aria-label': 'Replay audio',
-    onclick: (e) => { e.stopPropagation(); playCurrent(); },
-  }, h('span', { class: 'replay-icon', 'aria-hidden': 'true' }, '▶︎'), replayHint);
+    class: 'replay', type: 'button', 'data-testid': 'replay', 'aria-label': 'Play audio',
+    onclick: (e) => { e.stopPropagation(); togglePlay(); },
+  }, replayIcon, replayHint);
+
+  const fmtStep = (sec) => (sec >= 1 ? `−${sec}s` : `−${String(sec).replace(/^0/, '')}s`);
+  const transport = h('div', { class: 'transport', role: 'group', 'aria-label': 'Playback controls', 'data-testid': 'transport',
+    onclick: (e) => e.stopPropagation() },
+    h('button', { class: 'tbtn', type: 'button', 'data-testid': 'restart', 'aria-label': 'Restart from the beginning', title: 'Restart',
+      onclick: () => { if (clip) player.restart(); } }, '↺'),
+    ...REWIND_STEPS.map((sec) => h('button', {
+      class: 'tbtn', type: 'button', 'data-testid': `rewind-${sec}`, 'aria-label': `Go back ${sec} second${sec === 1 ? '' : 's'}`,
+      onclick: () => { if (clip) player.seekBy(-sec); },
+    }, fmtStep(sec))));
+
+  const speedBtns = new Map();
+  const speeds = h('div', { class: 'speeds', role: 'radiogroup', 'aria-label': 'Playback speed', 'data-testid': 'speeds',
+    onclick: (e) => e.stopPropagation() },
+    ...RATES.map((r) => {
+      const b = h('button', {
+        class: 'speed', type: 'button', role: 'radio', 'data-testid': `speed-${r}`, 'aria-label': `Speed ${r}×`,
+        onclick: () => setRate(r),
+      }, `${r}×`);
+      speedBtns.set(r, b);
+      return b;
+    }));
+  function paintSpeeds() {
+    for (const [r, b] of speedBtns) {
+      const on = Math.abs(r - player.rate) < 1e-6;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    }
+  }
+  async function setRate(r) {
+    player.setRate(r);
+    paintSpeeds();
+    await state.setSetting('rate', r);
+  }
+  paintSpeeds();
 
   const setAudioState = (st) => {
-    replayBtn.classList.toggle('playing', st === 'playing' || st === 'loading');
+    const playing = st === 'playing' || st === 'loading';
+    replayBtn.classList.toggle('playing', playing);
+    replayBtn.classList.toggle('paused', st === 'paused');
     replayBtn.classList.toggle('blocked', st === 'blocked' || st === 'error');
-    replayHint.textContent = st === 'blocked' ? 'Tap to play' : st === 'error' ? 'Audio failed · tap to retry' : '';
+    replayIcon.textContent = playing ? '❚❚' : '▶︎';
+    replayBtn.setAttribute('aria-label', playing ? 'Pause audio' : st === 'paused' ? 'Resume audio' : 'Play audio');
+    replayHint.textContent = st === 'blocked' ? 'Tap to play' : st === 'error' ? 'Audio failed · tap to retry' : st === 'paused' ? 'Paused' : '';
   };
   const unsubscribe = player.onChange(setAudioState);
 
   async function playCurrent() {
     if (!clip) return;
     const res = await player.play(data.clipUrl(clip.file));
+    if (res === 'blocked') setAudioState('blocked');
+  }
+  async function togglePlay() {
+    if (!clip) return;
+    const res = await player.toggle();
     if (res === 'blocked') setAudioState('blocked');
   }
 
@@ -141,7 +190,9 @@ export function render(root, app, [mode]) {
     const label = item.kind === 'word' ? 'Word' : `Sentence${clip.gender ? ` · ${clip.gender}` : ''}`;
     cardArea.append(h('p', { class: 'card-label', 'data-testid': 'card-label' }, label));
     replayBtn.classList.toggle('small', revealed);
-    cardArea.append(replayBtn);
+    transport.classList.toggle('small', revealed);
+    speeds.classList.toggle('small', revealed);
+    cardArea.append(replayBtn, transport, speeds);
 
     if (!revealed) {
       // Tapping anywhere on the lower half of the card reveals the answer.
@@ -326,13 +377,20 @@ export function render(root, app, [mode]) {
       h('a', { class: 'btn grow', href: '#/', 'data-testid': 'study-home', 'aria-label': 'Home' }, 'Home')));
   }
 
-  // ---- Keyboard: 1–4 grade, space = reveal (front) / replay (back), r = replay --------------
+  // ---- Keyboard: space = play/pause, Enter = reveal, ← = back 1 s (shift: 5 s, alt: 0.1 s),
+  //      r = restart, [ ] = slower / faster, 1–4 = grade --------------------------------------
   const onKey = (e) => {
     if (e.target.closest && e.target.closest('input, textarea, select')) return;
-    if (e.ctrlKey || e.metaKey || e.altKey || !item) return;
-    if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); revealed ? playCurrent() : reveal(); }
+    if (e.ctrlKey || e.metaKey || !item) return;
+    if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); togglePlay(); }
     else if (e.key === 'Enter' && !revealed && e.target === document.body) { e.preventDefault(); reveal(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); player.seekBy(e.shiftKey ? -5 : e.altKey ? -0.1 : -1); }
     else if (e.key === 'r' || e.key === 'R') playCurrent();
+    else if (e.key === '[' || e.key === ']') {
+      const i = RATES.findIndex((r) => Math.abs(r - player.rate) < 1e-6);
+      const j = Math.min(RATES.length - 1, Math.max(0, (i < 0 ? RATES.indexOf(1) : i) + (e.key === ']' ? 1 : -1)));
+      setRate(RATES[j]);
+    }
     else if (revealed) { const g = GRADES.find((x) => x.key === e.key); if (g) { e.preventDefault(); grade(g.id); } }
   };
   document.addEventListener('keydown', onKey);

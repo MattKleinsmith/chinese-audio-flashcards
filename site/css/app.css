@@ -272,6 +272,40 @@ body[data-route="study"] main { max-width: 640px; }
 .replay.small .replay-icon { font-size: 26px; margin-left: 3px; }
 .replay.small .replay-hint { font-size: 0.65rem; }
 @media (prefers-reduced-motion: reduce) { .replay.playing::after { animation: none; opacity: 0.5; } }
+.replay.paused { background: color-mix(in srgb, var(--accent) 80%, var(--surface)); }
+
+/* Transport row: restart + relative rewinds. Small steps are meant to be tapped repeatedly, so
+   the buttons are wide, react instantly and never move. No time or position is shown. */
+.transport {
+  position: relative; z-index: 2;
+  display: flex; gap: 6px; justify-content: center; flex-wrap: nowrap; width: 100%; max-width: 380px;
+}
+.tbtn {
+  flex: 1 1 0; min-width: 0; height: 48px; padding: 0 4px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2, var(--surface));
+  color: var(--fg); font: inherit; font-size: 0.95rem; font-weight: 600; font-variant-numeric: tabular-nums;
+  cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.tbtn:active { background: var(--accent-soft); border-color: var(--accent); }
+.tbtn:first-child { flex: 0 0 48px; font-size: 1.35rem; }
+.transport.small .tbtn { height: 40px; font-size: 0.85rem; }
+.transport.small .tbtn:first-child { flex-basis: 40px; font-size: 1.15rem; }
+
+/* Speed chips (pitch is preserved at every speed). */
+.speeds {
+  position: relative; z-index: 2;
+  display: flex; gap: 4px; justify-content: center; width: 100%; max-width: 380px;
+}
+.speed {
+  flex: 1 1 0; min-width: 0; height: 34px; padding: 0 2px;
+  border: 1px solid var(--border); border-radius: 999px; background: transparent;
+  color: var(--muted); font: inherit; font-size: 0.78rem; font-weight: 600; font-variant-numeric: tabular-nums;
+  cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.speed.active { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.speeds.small .speed { height: 28px; font-size: 0.72rem; }
+.card-area.revealed .transport, .card-area.revealed .speeds { margin-top: -6px; }
+
 
 .answer { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; text-align: center; }
 .hanzi { font-family: var(--font-zh); font-size: clamp(56px, 18vw, 88px); line-height: 1.1; font-weight: 500; }

@@ -46,17 +46,25 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
 1. Home → **Words** tile → **Start**.
 2. The clip should **play by itself** straight away. If the phone blocks autoplay, the button
    says *Tap to play*. Tap it and the clip plays.
-3. Check the front of the card. It must show **only** a round Replay button and the label
-   "Word". There must be **no** duration, timer, seek bar, progress line or waveform. The
-   counter at the top counts cards (e.g. `0/20`), not seconds.
-4. Tap Replay a few times. The clip restarts from the beginning every time, and a soft pulsing
-   ring shows while it plays.
+3. Check the front of the card. It must show **only** the label "Word", a round Play/Pause
+   button, a row of transport buttons (↺, −5s, −1s, −.5s, −.1s) and a row of speed chips
+   (0.25× to 1.5×). There must be **no** duration, timer, seek bar, progress line or waveform.
+   The counter at the top counts cards (e.g. `0/20`), not seconds.
+4. Transport checks, best done on a sentence card:
+   - Tap the big button while a clip plays: it pauses and says *Paused*. Tap again: it resumes
+     from where it stopped, not from the beginning.
+   - Tap −1s a few times quickly while playing: the audio jumps back each tap and keeps playing.
+     Tap −.1s repeatedly: small, precise steps. Tapping past the start just holds at the start.
+   - Pause, tap −5s, then resume: playback continues from the earlier point.
+   - Tap ↺: the clip restarts from the beginning.
+   - Tap 0.5× then 1.25×: the tempo changes but the voice keeps its pitch. Leave the app and
+     come back: the chosen speed is remembered (it is also in Settings).
 5. Tap **Show answer**, or tap anywhere on the lower half of the card. Check the back:
    - large Hanzi
    - tone-coloured pinyin in the Pleco / Hack Chinese scheme (1 red, 2 green, 3 blue, 4 purple, neutral grey)
    - up to 3 definitions
    - an HSK badge
-6. Tap Replay on the back. It still plays.
+6. The transport controls stay on the back (smaller). Pause, rewind and speed still work.
 7. Grade with Again / Hard / Good / Easy. Each button shows its next interval (e.g. `1m`,
    `10m`, `4d`). Press **Again** on one card: it comes back 3–6 cards later in the same session.
 8. Try the ≡ menu: *Skip*, *Suspend card*, *Report bad audio*. Each one moves on to the next card.
@@ -79,7 +87,7 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
 2. Turn on **airplane mode**.
 3. Reopen the app from the home screen icon. It should load, and the cards you have already
    played (plus the pre-fetched ones) should still play.
-4. Clips that were never cached will not play offline. That is expected: the Replay button
+4. Clips that were never cached will not play offline. That is expected: the Play button
    shows *Audio failed · tap to retry*, and the app does not crash.
 5. Turn airplane mode off again.
 
