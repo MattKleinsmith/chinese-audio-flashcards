@@ -208,15 +208,15 @@ async function main() {
     ok(`copied selection is hanzi only: ${copied}`);
     const hzToneClasses = await page.locator('[data-testid=sentence] .hz[class*=" t"]').count();
     assert.ok(hzToneClasses >= 1, 'characters carry tone classes');
-    await page.click('[data-testid=menu]');
-    await page.click('[data-testid=menu-pinyin]');
+    await page.click('[data-testid=card-pinyin]'); // chip on the card itself
     await page.waitForSelector('[data-testid=sentence].no-pinyin');
+    assert.equal(await page.getAttribute('[data-testid=card-pinyin]', 'aria-checked'), 'false');
     assert.equal(await page.locator('[data-testid=sentence] .py').count(), 0, 'pinyin hidden');
     assert.equal(await page.locator('[data-testid=sentence] .hz[class*=" t"]').count(), 0, 'tone colours hidden with pinyin');
     await page.click('[data-testid=menu]');
     await page.click('[data-testid=menu-pinyin]');
     await page.waitForSelector('[data-testid=sentence]:not(.no-pinyin) .py');
-    ok('Hide pinyin toggle removes pinyin and tone colours; toggling back restores them');
+    ok('pinyin chip on the card hides pinyin and tone colours; the menu item restores them');
     const pyBelow = await page.evaluate(() => {
       const t = document.querySelector('[data-testid=sentence] .tok');
       return t.querySelector('.py').getBoundingClientRect().top >= t.querySelector('.hz').getBoundingClientRect().bottom - 2;

@@ -276,6 +276,22 @@ export function render(root, app, [mode]) {
   }
 
   // ---- Answers --------------------------------------------------------------------------------
+  /** Pinyin on/off chip shown on the card back; changes the persistent setting and re-renders. */
+  function pinyinToggle() {
+    const on = settings.showPinyin !== false;
+    return h('button', {
+      class: `chip toggle${on ? ' on' : ''}`, type: 'button', role: 'switch', 'aria-checked': String(on),
+      'data-testid': 'card-pinyin', 'aria-label': 'Show pinyin',
+      onclick: async (e) => {
+        e.stopPropagation();
+        await state.setSetting('showPinyin', !on);
+        const mi = menu.querySelector('[data-testid=menu-pinyin]');
+        if (mi) { mi.setAttribute('aria-checked', String(!on)); mi.textContent = on ? 'Show pinyin' : 'Hide pinyin'; }
+        renderCard();
+      },
+    }, on ? 'Pinyin on' : 'Pinyin off');
+  }
+
   /** Hanzi split into per-character spans coloured by the tone of the matching pinyin syllable. */
   function colouredHanzi(hanzi, pinyin, toneColors) {
     const chars = [...hanzi];
@@ -293,7 +309,8 @@ export function render(root, app, [mode]) {
       showPy ? pinyinEl(w.p, { toneColors: tc, className: 'pinyin big' }) : null,
       settings.showDefinition && glossList(w.d).length
         ? h('ul', { class: 'defs' }, glossList(w.d).slice(0, 3).map((d) => h('li', {}, d))) : null,
-      w.hsk ? h('span', { class: 'badge' }, `HSK ${w.hsk}`) : null);
+      w.hsk ? h('span', { class: 'badge' }, `HSK ${w.hsk}`) : null,
+      h('div', { class: 'card-tools' }, pinyinToggle()));
   }
 
   let popover = null;
@@ -327,7 +344,7 @@ export function render(root, app, [mode]) {
         ? h('p', { class: 'translation center', 'data-testid': 'translation', lang: 'en' }, s.en,
           h('span', { class: 'muted small mt-label' }, ' · machine translation'))
         : null,
-      h('p', { class: 'muted small center' }, 'Tap a word for its meaning'));
+      h('div', { class: 'card-tools' }, h('span', { class: 'muted small' }, 'Tap a word for its meaning'), pinyinToggle()));
     box.addEventListener('click', (e) => { if (!e.target.closest('.popover')) closePopover(); });
     return box;
   }
