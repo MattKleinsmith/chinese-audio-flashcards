@@ -1,7 +1,7 @@
 node_modules/
 pipeline/work/
-pipeline/.venv/
-.venv/
+pipeline/.venv
+.venv
 __pycache__/
 *.pyc
 site/data-private/
