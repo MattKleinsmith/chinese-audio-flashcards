@@ -47,7 +47,19 @@ export function render(root, app, [mode]) {
   const menu = h('div', { class: 'menu', role: 'menu', hidden: true },
     h('button', { type: 'button', role: 'menuitem', 'data-testid': 'menu-skip', 'aria-label': 'Skip card', onclick: () => { closeMenu(); skip(); } }, 'Skip'),
     h('button', { type: 'button', role: 'menuitem', 'data-testid': 'menu-suspend', 'aria-label': 'Suspend card', onclick: () => { closeMenu(); suspendCard(); } }, 'Suspend card'),
-    h('button', { type: 'button', role: 'menuitem', 'data-testid': 'menu-bad-audio', 'aria-label': 'Report bad audio', onclick: () => { closeMenu(); reportBadAudio(); } }, 'Report bad audio'));
+    h('button', { type: 'button', role: 'menuitem', 'data-testid': 'menu-bad-audio', 'aria-label': 'Report bad audio', onclick: () => { closeMenu(); reportBadAudio(); } }, 'Report bad audio'),
+    h('button', {
+      type: 'button', role: 'menuitemcheckbox', 'data-testid': 'menu-pinyin', 'aria-checked': String(settings.showPinyin !== false),
+      'aria-label': 'Show pinyin',
+      onclick: async (e) => {
+        const btn = e.currentTarget; // null after the await, so capture it first
+        closeMenu();
+        await state.setSetting('showPinyin', settings.showPinyin === false);
+        btn.setAttribute('aria-checked', String(settings.showPinyin !== false));
+        btn.textContent = settings.showPinyin === false ? 'Show pinyin' : 'Hide pinyin';
+        if (item && revealed) renderCard();
+      },
+    }, settings.showPinyin === false ? 'Show pinyin' : 'Hide pinyin'));
   const menuBtn = h('button', {
     class: 'icon-btn', type: 'button', 'aria-label': 'Card menu', 'aria-haspopup': 'menu', 'aria-expanded': 'false', 'data-testid': 'menu',
     onclick: (e) => { e.stopPropagation(); menu.hidden ? openMenu() : closeMenu(); },
@@ -264,12 +276,21 @@ export function render(root, app, [mode]) {
   }
 
   // ---- Answers --------------------------------------------------------------------------------
+  /** Hanzi split into per-character spans coloured by the tone of the matching pinyin syllable. */
+  function colouredHanzi(hanzi, pinyin, toneColors) {
+    const chars = [...hanzi];
+    const syl = String(pinyin || '').trim().split(/\s+/).filter(Boolean);
+    if (!toneColors || syl.length !== chars.length) return [hanzi];
+    return chars.map((c, i) => h('span', { class: `hz t${toneOf(syl[i])}` }, c));
+  }
+
   function wordBack(w) {
-    const tc = settings.toneColors;
+    const showPy = settings.showPinyin !== false;
+    const tc = settings.toneColors && showPy;
     return h('div', { class: 'answer word-answer', 'data-testid': 'answer' },
-      h('div', { class: 'hanzi', lang: 'zh-Hans', 'data-testid': 'answer-hanzi' }, w.s),
+      h('div', { class: 'hanzi', lang: 'zh-Hans', 'data-testid': 'answer-hanzi' }, ...colouredHanzi(w.s, w.p, tc)),
       settings.showTraditional && w.t && w.t !== w.s ? h('div', { class: 'trad muted', lang: 'zh-Hant' }, w.t) : null,
-      pinyinEl(w.p, { toneColors: tc, className: 'pinyin big' }),
+      showPy ? pinyinEl(w.p, { toneColors: tc, className: 'pinyin big' }) : null,
       settings.showDefinition && glossList(w.d).length
         ? h('ul', { class: 'defs' }, glossList(w.d).slice(0, 3).map((d) => h('li', {}, d))) : null,
       w.hsk ? h('span', { class: 'badge' }, `HSK ${w.hsk}`) : null);
@@ -279,10 +300,11 @@ export function render(root, app, [mode]) {
   function closePopover() { if (popover) { popover.remove(); popover = null; } }
 
   function sentenceBack(s) {
-    const tc = settings.toneColors;
+    const showPy = settings.showPinyin !== false;
+    const tc = settings.toneColors && showPy;
     const toks = sentenceTokens(s);
     const vocabSet = new Set(state.vocab.keys());
-    const wrap = h('div', { class: 'sentence', lang: 'zh-Hans', 'data-testid': 'sentence' });
+    const wrap = h('div', { class: `sentence${showPy ? '' : ' no-pinyin'}`, lang: 'zh-Hans', 'data-testid': 'sentence' });
     s.tokens.forEach(([a, b], i) => {
       const text = toks[i];
       const known = isKnownToken(text, vocabSet);
@@ -295,12 +317,16 @@ export function render(root, app, [mode]) {
       // Two-row grid: hanzi on top, its pinyin (from `cp`) underneath, one column per char.
       for (let k = a; k < b; k++) {
         const py = s.cp[k] || '';
-        tok.append(h('span', { class: 'hz' }, s.chars[k]));
-        tok.append(h('span', { class: `py${tc ? ` t${toneOf(py)}` : ''}`, lang: 'zh-Latn-pinyin' }, numericToMarks(py)));
+        tok.append(h('span', { class: `hz${tc ? ` t${toneOf(py)}` : ''}` }, s.chars[k]));
+        if (showPy) tok.append(h('span', { class: `py${tc ? ` t${toneOf(py)}` : ''}`, lang: 'zh-Latn-pinyin' }, numericToMarks(py)));
       }
       wrap.append(tok);
     });
     const box = h('div', { class: 'answer sentence-answer', 'data-testid': 'answer' }, wrap,
+      s.en && settings.showTranslation !== false
+        ? h('p', { class: 'translation center', 'data-testid': 'translation', lang: 'en' }, s.en,
+          h('span', { class: 'muted small', 'aria-label': 'machine translation' }, ' · MT'))
+        : null,
       h('p', { class: 'muted small center' }, 'Tap a word for its meaning'));
     box.addEventListener('click', (e) => { if (!e.target.closest('.popover')) closePopover(); });
     return box;
@@ -395,12 +421,29 @@ export function render(root, app, [mode]) {
   };
   document.addEventListener('keydown', onKey);
 
+  // Copying a selection that lies inside a sentence yields just the characters, in order, with
+  // no pinyin interleaved, so the text can be pasted straight into a translator or dictionary.
+  const onCopy = (e) => {
+    const sel = document.getSelection();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    const sentence = cardArea.querySelector('[data-testid=sentence]');
+    if (!sentence || !sentence.contains(range.commonAncestorContainer) && range.commonAncestorContainer !== sentence
+      && !(range.intersectsNode(sentence) && cardArea.contains(range.commonAncestorContainer))) return;
+    const text = [...sentence.querySelectorAll('.hz')].filter((el) => range.intersectsNode(el)).map((el) => el.textContent).join('');
+    if (!text) return;
+    e.clipboardData.setData('text/plain', text);
+    e.preventDefault();
+  };
+  document.addEventListener('copy', onCopy);
+
   // Warm the cache for the first 10 cards (offline "waiting in line" use), then show card 1.
   for (const it of session.queue.slice(0, 10)) { const c = clipFor(it); if (c) preload(data.clipUrl(c.file)); }
   showCard();
 
   return () => {
     document.removeEventListener('keydown', onKey);
+    document.removeEventListener('copy', onCopy);
     document.removeEventListener('click', onDocClick);
     unsubscribe();
     player.stop();

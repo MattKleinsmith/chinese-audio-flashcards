@@ -95,9 +95,11 @@ export function render(root, app) {
       select(app, 'rate', 'Playback speed', RATES.map((r) => [r, r === 1 ? '1× (natural speed)' : `${r}× — pitch preserved`]), {
         parse: Number, onChange: (v) => app.player.setRate(v),
       }),
+      toggle(app, 'showPinyin', 'Show pinyin', 'Off = read the characters unaided; tone colours are hidden too'),
       toggle(app, 'toneColors', 'Tone colours'),
       toggle(app, 'showTraditional', 'Show traditional characters'),
       toggle(app, 'showDefinition', 'Show definition on word cards'),
+      toggle(app, 'showTranslation', 'Show sentence translation', 'Machine-translated; word meanings are from CC-CEDICT'),
       select(app, 'threshold', 'Unknown words allowed per sentence', [[0, '0 (only known words)'], [1, '1'], [2, '2']]),
       number(app, 'newWords', 'New words per day', 0, 500),
       number(app, 'newSentences', 'New sentences per day', 0, 500),
@@ -109,7 +111,7 @@ export function render(root, app) {
       h('h2', {}, 'Hack Chinese sync'),
       h('p', { class: 'muted small' },
         'A daily GitHub Action downloads your “all studied words” export into this site; the app adds any new words automatically on open. ',
-        'Set the HC_EMAIL and HC_PASSWORD repository secrets to enable it (see the README).'),
+        'Set the HACKCHINESE_EMAIL and HACKCHINESE_PASSWORD repository secrets to enable it (see the README).'),
       syncStatus,
       h('div', { class: 'row gap wrap' },
         h('button', {

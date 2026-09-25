@@ -330,12 +330,20 @@ body[data-route="study"] main { max-width: 640px; }
 }
 .tok:hover, .tok:focus-visible { background: var(--surface-2); }
 .tok .hz { font-family: var(--font-zh); font-size: 1.75rem; line-height: 1.2; grid-row: 1; }
-.tok .py { font-size: 0.72rem; line-height: 1.2; grid-row: 2; color: var(--muted); white-space: nowrap; }
+.tok .py { font-size: 0.72rem; line-height: 1.2; grid-row: 2; color: var(--muted); white-space: nowrap; user-select: none; -webkit-user-select: none; }
+/* Characters take the tone colour of their syllable (same Pleco scheme as the pinyin). */
+.tok .hz.t1, .hanzi .hz.t1 { color: var(--t1); }
+.tok .hz.t2, .hanzi .hz.t2 { color: var(--t2); }
+.tok .hz.t3, .hanzi .hz.t3 { color: var(--t3); }
+.tok .hz.t4, .hanzi .hz.t4 { color: var(--t4); }
+.tok .hz.t5, .hanzi .hz.t5 { color: var(--t5); }
 .tok .py.t1 { color: var(--t1); }
 .tok .py.t2 { color: var(--t2); }
 .tok .py.t3 { color: var(--t3); }
 .tok .py.t4 { color: var(--t4); }
 .tok .py.t5 { color: var(--t5); }
+.translation { margin: 4px 0 0; font-size: 1.05rem; color: var(--fg); }
+.sentence.no-pinyin .tok { grid-template-rows: auto; row-gap: 0; }
 .tok[data-known="false"] .hz { text-decoration: underline dotted var(--muted); text-underline-offset: 5px; text-decoration-thickness: 2px; }
 
 .popover {

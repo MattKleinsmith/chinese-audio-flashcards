@@ -1,0 +1,43 @@
+name: Sync vocab from Hack Chinese
+# Daily: sign in to Hack Chinese, download "all studied words", commit it into site/data/user/.
+# The web app imports new words from that file on its next open. Uses two repository secrets:
+# HACKCHINESE_EMAIL and HACKCHINESE_PASSWORD (Settings → Secrets and variables → Actions).
+on:
+  schedule:
+    - cron: '17 3 * * *'   # daily 03:17 UTC
+  workflow_dispatch:
+permissions: { contents: write, actions: write }
+concurrency: { group: hackchinese-sync, cancel-in-progress: false }
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install requests
+      - name: Download the export
+        env:
+          HACKCHINESE_EMAIL: ${{ secrets.HACKCHINESE_EMAIL }}
+          HACKCHINESE_PASSWORD: ${{ secrets.HACKCHINESE_PASSWORD }}
+        run: python sync/hackchinese_sync.py --out-dir site/data/user
+      - name: Commit if the word list changed
+        id: commit
+        run: |
+          git config user.name "hackchinese-sync[bot]"
+          git config user.email "hackchinese-sync@users.noreply.github.com"
+          git add site/data/user/hackchinese.csv
+          if git diff --cached --quiet; then
+            echo "no change in the word list"; echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git add site/data/user/sync.json
+            git commit -m "Sync vocab from Hack Chinese"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      # Commits made with GITHUB_TOKEN do not trigger other workflows, so kick the Pages deploy
+      # ourselves (harmless if Pages is set to "Deploy from a branch", which rebuilds on its own).
+      - name: Redeploy the site
+        if: steps.commit.outputs.changed == 'true'
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: gh workflow run pages.yml --ref "${GITHUB_REF_NAME}" || true

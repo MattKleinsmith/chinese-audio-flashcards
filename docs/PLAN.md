@@ -265,6 +265,9 @@ An array. One entry per distinct simplified word that has at least one clip.
   }
 ]
 ```
+Optional `"en": "Wushu has always been regarded as our national treasure."` — a sentence-level
+machine translation added by `pipeline/translate.py` (opus-mt-zh-en, labelled "MT" in the app).
+
 Rules: `chars.length === cp.length === text.length` (text contains only the characters, no
 punctuation — AISHELL-3 transcripts have none). Tokens tile the text exactly. The app looks
 each token up in `words.json` by simplified string **and** in the user's vocab; a token is

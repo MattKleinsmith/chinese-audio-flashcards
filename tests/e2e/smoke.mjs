@@ -191,6 +191,32 @@ async function main() {
     const pyCount = await page.locator('[data-testid=sentence] .tok .py').count();
     assert.ok(tokCount >= 1 && hzCount === pyCount && pyCount >= tokCount, `tokens ${tokCount}, hz ${hzCount}, py ${pyCount}`);
     assert.equal(await page.locator('[data-testid=sentence] ruby').count(), 0, 'grid layout, not <ruby>');
+    const enText = (await page.textContent('[data-testid=translation]')).trim();
+    assert.match(enText, /[A-Za-z]{2,}.*· MT$/, `sentence translation shown: ${enText}`);
+    ok(`translation shown: ${enText.slice(0, 50)}`);
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    const copied = await page.evaluate(async () => {
+      const el = document.querySelector('[data-testid=sentence]');
+      const range = document.createRange(); range.selectNodeContents(el);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      document.execCommand('copy');
+      return navigator.clipboard.readText();
+    });
+    const expectedText = await page.evaluate(() => [...document.querySelectorAll('[data-testid=sentence] .hz')].map((e) => e.textContent).join(''));
+    assert.equal(copied, expectedText, 'copy yields only the characters, no pinyin');
+    assert.match(copied, /^\p{Script=Han}+$/u);
+    ok(`copied selection is hanzi only: ${copied}`);
+    const hzToneClasses = await page.locator('[data-testid=sentence] .hz[class*=" t"]').count();
+    assert.ok(hzToneClasses >= 1, 'characters carry tone classes');
+    await page.click('[data-testid=menu]');
+    await page.click('[data-testid=menu-pinyin]');
+    await page.waitForSelector('[data-testid=sentence].no-pinyin');
+    assert.equal(await page.locator('[data-testid=sentence] .py').count(), 0, 'pinyin hidden');
+    assert.equal(await page.locator('[data-testid=sentence] .hz[class*=" t"]').count(), 0, 'tone colours hidden with pinyin');
+    await page.click('[data-testid=menu]');
+    await page.click('[data-testid=menu-pinyin]');
+    await page.waitForSelector('[data-testid=sentence]:not(.no-pinyin) .py');
+    ok('Hide pinyin toggle removes pinyin and tone colours; toggling back restores them');
     const pyBelow = await page.evaluate(() => {
       const t = document.querySelector('[data-testid=sentence] .tok');
       return t.querySelector('.py').getBoundingClientRect().top >= t.querySelector('.hz').getBoundingClientRect().bottom - 2;

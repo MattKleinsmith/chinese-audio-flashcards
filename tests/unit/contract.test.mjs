@@ -56,6 +56,7 @@ function checkBundle(dir) {
     assert.equal(pos, s.text.length, `${s.id} tokens cover text`);
     assert.match(s.clip.file, /^clips\/.+\.mp3$/);
     assert.ok(s.clip.ms > 0 && s.clip.ms <= 8000, `${s.id} ms`);
+    if (s.en !== undefined) assert.equal(typeof s.en, 'string', `${s.id} en is a string`);
     if (local) assert.ok(existsSync(join(dir, s.clip.file)), `missing ${s.clip.file}`);
   }
   return { words, sentences };

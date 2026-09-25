@@ -24,6 +24,8 @@ export const DEFAULT_SETTINGS = {
   toneColors: true,
   showTraditional: false,
   showDefinition: true,
+  showTranslation: true,
+  showPinyin: true,
   threshold: 0,
   newWords: 15,
   newSentences: 10,

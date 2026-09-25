@@ -2,7 +2,7 @@
 """Download the "all studied words" export from Hack Chinese into the site bundle.
 
 Runs unattended in GitHub Actions (see .github/workflows/hackchinese-sync.yml) and can also
-be run by hand. It signs in with HC_EMAIL / HC_PASSWORD, downloads
+be run by hand. It signs in with HACKCHINESE_EMAIL / HACKCHINESE_PASSWORD, downloads
 https://www.hackchinese.com/all-studied-words.csv, checks that the file looks like a word
 list, and writes:
 
@@ -113,9 +113,10 @@ def main(argv=None) -> int:
         data = Path(args.csv).read_bytes()
     else:
         import requests  # only needed online
-        email, password = os.environ.get("HC_EMAIL", ""), os.environ.get("HC_PASSWORD", "")
+        email = os.environ.get("HACKCHINESE_EMAIL") or os.environ.get("HC_EMAIL", "")
+        password = os.environ.get("HACKCHINESE_PASSWORD") or os.environ.get("HC_PASSWORD", "")
         if not email or not password:
-            print("HC_EMAIL and HC_PASSWORD must be set (as GitHub Actions secrets or env vars)", file=sys.stderr)
+            print("HACKCHINESE_EMAIL and HACKCHINESE_PASSWORD must be set (as GitHub Actions secrets or env vars)", file=sys.stderr)
             return 2
         s = requests.Session()
         s.headers["User-Agent"] = UA

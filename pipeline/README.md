@@ -40,6 +40,18 @@ pipeline/.venv/bin/python pipeline/validate.py --trim-check 40
 pipeline/.venv/bin/python -m unittest discover -s pipeline/tests -v
 ```
 
+Sentence translations (`en`) are added afterwards by `translate.py`, which runs the free
+Helsinki-NLP opus-mt-zh-en model locally (no API key) and caches results in
+`work/translations.json`, so rebuilds only translate new sentences:
+
+```sh
+pipeline/.venv/bin/pip install -r pipeline/requirements-translate.txt   # torch (CPU) + transformers
+pipeline/.venv/bin/python pipeline/translate.py
+```
+
+Quality is good enough for a gloss on short sentences but not perfect; the app labels it "MT".
+Better translations (e.g. an LLM) can be plugged in as another `--provider` later.
+
 `build.py` also downloads CC-CEDICT and sparse-clones `hugolpz/audio-cmn` (64k/hsk + lists)
 into `pipeline/work/` (git-ignored) if they are missing. A clean build takes about 2 minutes on
 4 cores; re-runs reuse every clip and the AISHELL-3 stream index and finish in ~20 s. `--force`

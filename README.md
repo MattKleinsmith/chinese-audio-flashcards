@@ -44,7 +44,7 @@ manual import, so the phone never needs the import screen. Words are only added;
 *Mirror deletions* in Settings to also remove words that leave the export.
 
 To run it daily, add the workflow below as `.github/workflows/hackchinese-sync.yml` and add two
-repository secrets, `HC_EMAIL` and `HC_PASSWORD` (Settings → Secrets and variables → Actions).
+repository secrets, `HACKCHINESE_EMAIL` and `HACKCHINESE_PASSWORD` (Settings → Secrets and variables → Actions).
 It runs at 03:17 UTC and on demand from the Actions tab. Note that the word list is committed to
 this repository, so in a public repo your vocabulary list is public.
 
@@ -66,8 +66,8 @@ jobs:
       - run: pip install requests
       - name: Download the export
         env:
-          HC_EMAIL: ${{ secrets.HC_EMAIL }}
-          HC_PASSWORD: ${{ secrets.HC_PASSWORD }}
+          HACKCHINESE_EMAIL: ${{ secrets.HACKCHINESE_EMAIL }}
+          HACKCHINESE_PASSWORD: ${{ secrets.HACKCHINESE_PASSWORD }}
         run: python sync/hackchinese_sync.py --out-dir site/data/user
       - name: Commit if the word list changed
         id: commit

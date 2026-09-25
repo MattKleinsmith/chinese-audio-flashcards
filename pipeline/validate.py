@@ -127,8 +127,10 @@ def check_word(w: dict, rep: Report, data_dir: Path) -> None:
 
 def check_sentence(e: dict, rep: Report, data_dir: Path) -> None:
     sid = e.get("id", "?")
-    if set(e) != SENT_KEYS:
-        rep.err(f"sentence {sid}: keys {sorted(e)} != {sorted(SENT_KEYS)}")
+    if set(e) - {"en"} != SENT_KEYS:
+        rep.err(f"sentence {sid}: keys {sorted(e)} != {sorted(SENT_KEYS)} (+ optional en)")
+    if "en" in e and not isinstance(e["en"], str):
+        rep.err(f"sentence {sid}: en must be a string")
         return
     text, chars, cp, toks, clip = e["text"], e["chars"], e["cp"], e["tokens"], e["clip"]
     if not (isinstance(chars, list) and isinstance(cp, list) and len(chars) == len(cp) == len(text)):
@@ -245,8 +247,12 @@ def validate(data_dir: Path) -> tuple[Report, dict, list, list]:
     words = load_min_json(data_dir / files.get("words", "words.json"), rep)
     sentences = load_min_json(data_dir / files.get("sentences", "sentences.json"), rep)
     counts = manifest.get("counts", {})
-    if counts != {"words": len(words), "sentences": len(sentences)}:
+    core = {k: v for k, v in counts.items() if k in ("words", "sentences")}
+    if core != {"words": len(words), "sentences": len(sentences)}:
         rep.err(f"manifest counts {counts} != actual words={len(words)} sentences={len(sentences)}")
+    translated = sum(1 for s in sentences if s.get("en"))
+    if "translated" in counts and counts["translated"] != translated:
+        rep.err(f"manifest counts.translated {counts['translated']} != actual {translated}")
     src_ids = {s.get("id") for s in manifest.get("sources", [])}
 
     for kind, items, key in (("word", words, "id"), ("sentence", sentences, "id")):
