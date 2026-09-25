@@ -30,12 +30,14 @@ a few reps while waiting in line.
 On a phone, use *Add to Home Screen* so it runs full-screen. The full manual test script is in
 [docs/TESTING.md](docs/TESTING.md).
 
-## One-time setup: enable GitHub Pages
+## GitHub Pages
 
-The repo owner has to do this once: **Settings → Pages → Build and deployment → Source: GitHub
-Actions**. After that, `.github/workflows/pages.yml` deploys `site/` on every push to `main` and
-to `claude/chinese-listening-flashcards-4kse61`. It also stamps the short git SHA into the
-service worker and into Settings → About.
+`.github/workflows/pages.yml` deploys `site/` on every push to `main` (and to the dev branch)
+when the Pages source is **GitHub Actions** (Settings → Pages → Build and deployment). If the
+source is instead **Deploy from a branch** at the repository root, the root `index.html`
+redirects to `site/` and `.nojekyll` stops Jekyll from rewriting anything, so the app works
+either way. The Actions deploy also stamps the short git SHA into the service worker and
+into Settings → About.
 
 ## Development
 
