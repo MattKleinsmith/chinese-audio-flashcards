@@ -38,10 +38,12 @@ function safeJoin(base, urlPath) {
   return p === base || p.startsWith(base + sep) ? p : null;
 }
 
-async function handle(req, res, root, dataDir) {
+async function handle(req, res, root, dataDir, userData = true) {
   let urlPath;
   try { urlPath = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch { res.writeHead(400).end(); return; }
   let file;
+  // --no-user-data: pretend the synced Hack Chinese export is absent (tests start from empty).
+  if (!userData && urlPath.startsWith('/data/user/')) { res.writeHead(404).end('not found'); return; }
   if (urlPath === '/data' || urlPath.startsWith('/data/')) file = safeJoin(dataDir, urlPath.slice('/data'.length) || '/');
   else file = safeJoin(root, urlPath);
   if (!file) { res.writeHead(403).end('forbidden'); return; }
@@ -80,11 +82,11 @@ async function handle(req, res, root, dataDir) {
 }
 
 /** Start the server. port 0 picks a free port. */
-export function startServer({ port = 8080, root = join(REPO, 'site'), dataDir, quiet = false } = {}) {
+export function startServer({ port = 8080, root = join(REPO, 'site'), dataDir, quiet = false, userData = true } = {}) {
   const absRoot = resolve(root);
   const absData = resolve(dataDir || join(absRoot, 'data'));
   const server = createServer((req, res) => {
-    handle(req, res, absRoot, absData).catch((err) => {
+    handle(req, res, absRoot, absData, userData).catch((err) => {
       if (!res.headersSent) res.writeHead(500);
       res.end(String(err));
     });
@@ -106,6 +108,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     port: Number(arg('--port') || process.env.PORT || 8080),
     root: arg('--root') ? resolve(arg('--root')) : undefined,
     dataDir: arg('--data-dir') ? resolve(arg('--data-dir')) : undefined,
+    userData: !process.argv.includes('--no-user-data'),
   }).catch((err) => { console.error(err.message); process.exit(1); });
 }
 

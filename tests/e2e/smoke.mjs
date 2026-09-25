@@ -51,7 +51,7 @@ async function toastText(page, previous = null) {
 
 async function main() {
   const words = JSON.parse(readFileSync(join(DATA_DIR, 'words.json'), 'utf8'));
-  const { server, url } = await startServer({ port: 0, dataDir: DATA_DIR, quiet: true });
+  const { server, url } = await startServer({ port: 0, dataDir: DATA_DIR, quiet: true, userData: false }); // steps 11–12 mock the export themselves
   console.log(`e2e: serving ${url} with data from ${DATA_DIR} (${words.length} words)`);
   const browser = await launch();
   const errors = [];
