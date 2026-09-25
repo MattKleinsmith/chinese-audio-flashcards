@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="听力卡">
+  <rect width="512" height="512" rx="112" fill="#c2410c"/>
+  <text x="256" y="262" text-anchor="middle" dominant-baseline="central" font-size="330" fill="#ffffff"
+    font-family="PingFang SC, Hiragino Sans GB, Noto Sans CJK SC, Noto Sans SC, Microsoft YaHei, sans-serif">听</text>
+</svg>

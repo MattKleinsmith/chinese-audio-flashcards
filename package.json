@@ -1,0 +1,19 @@
+{
+  "name": "chinese-audio-flashcards",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Listening flashcards for Chinese (听力卡): native-speaker audio on the front, hanzi + pinyin on the back. Static PWA, all state in IndexedDB.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "serve": "node scripts/serve.mjs",
+    "serve:fixture": "node scripts/serve.mjs --data-dir tests/fixtures/data",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node --test \"tests/unit/*.test.mjs\"",
+    "test:e2e": "node tests/e2e/smoke.mjs",
+    "fixture": "node tests/fixtures/make-fixture.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}

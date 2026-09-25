@@ -1,0 +1,61 @@
+<!doctype html>
+<!-- index.html — app shell for Listening Cards (听力卡). All screens are rendered by js/main.js
+     into <main id="app">. Works from http(s); from file:// the service worker is skipped (and
+     most browsers also block ES modules + fetch there, so a hint is shown after a timeout). -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Listening flashcards for Chinese: hear a native speaker, then check the characters and pinyin.">
+  <meta name="theme-color" content="#c2410c" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1c1917" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="听力卡">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <!-- Replaced with the short git SHA by .github/workflows/pages.yml; shown in Settings → About. -->
+  <meta name="app-build" content="__BUILD_SHA__">
+  <title>听力卡 · Listening Cards</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/app.css">
+  <script>
+    // Apply the saved theme before first paint (localStorage holds only theme + last mode).
+    try { var t = localStorage.getItem('clf-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+</head>
+<body>
+  <div id="banner" class="banner" role="alert" hidden></div>
+  <header class="topbar" id="topbar">
+    <a class="icon-btn" id="nav-back" href="#/" aria-label="Back to home" hidden>&#8592;</a>
+    <a class="brand" href="#/" aria-label="Listening Cards home">
+      <span class="brand-zh" lang="zh-Hans">听力卡</span>
+      <span class="brand-en">Listening Cards</span>
+    </a>
+    <span class="topbar-spacer"></span>
+    <a class="icon-btn" id="nav-vocab" href="#/vocab" aria-label="Vocabulary list">&#9776;</a>
+    <a class="icon-btn" id="nav-settings" href="#/settings" aria-label="Settings">&#9881;&#xFE0E;</a>
+  </header>
+  <main id="app" tabindex="-1">
+    <div class="loading" id="boot-loading">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Loading…</p>
+      <p class="muted small" id="boot-hint" hidden>
+        Still loading? If you opened this file directly (file://), run
+        <code>npm run serve</code> and open http://localhost:8080 instead.
+      </p>
+    </div>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <!-- One <audio> element reused for the whole session (keeps mobile autoplay unlocked).
+       HARD REQUIREMENT: never add the `controls` attribute and never render duration,
+       elapsed time, a seek bar or a waveform anywhere. -->
+  <audio id="player" preload="auto" hidden></audio>
+  <script>
+    setTimeout(function () { var h = document.getElementById('boot-hint'); if (h && document.getElementById('boot-loading')) h.hidden = false; }, 4000);
+  </script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
