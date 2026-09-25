@@ -162,14 +162,20 @@ export function detectHeader(row) {
 }
 
 /** Map header names to roles; unmatched roles stay null. */
+// Header names that carry metadata, never a definition (Hack Chinese exports have Status and
+// Interval; Anki exports may have tags, due dates, ease). Such columns are excluded from
+// content-based inference so "strong" / "weak" never becomes a word's definition.
+const META_HEADER = /^(status|interval|ease|due|tags?|deck|note ?type|id|created|added|hsk|level|frequency|notes?)$/;
+
 function mapHeader(header) {
-  const m = { s: null, t: null, p: null, d: null };
+  const m = { s: null, t: null, p: null, d: null, ignore: [] };
   header.map(cleanCell).forEach((name, i) => {
-    const n = name.toLowerCase();
+    const n = name.toLowerCase().trim();
     if (m.t === null && /^traditional/.test(n)) m.t = i;
     else if (m.s === null && /^(simplified|hanzi|word|chinese|characters?)/.test(n)) m.s = i;
     else if (m.p === null && /^pinyin/.test(n)) m.p = i;
     else if (m.d === null && /^(definition|meaning|english|translation)/.test(n)) m.d = i;
+    else if (META_HEADER.test(n)) m.ignore.push(i);
   });
   return m;
 }
@@ -179,11 +185,12 @@ function mapHeader(header) {
  * other Latin text → d. Fractions are over all sampled rows so sparse columns lose.
  */
 export function inferColumns(rows, header = null) {
-  const mapping = header ? mapHeader(header) : { s: null, t: null, p: null, d: null };
+  const { ignore = [], ...mapping } = header ? mapHeader(header) : { s: null, t: null, p: null, d: null };
+  const ignored = new Set(ignore);
   const sample = rows.slice(0, 200);
   const ncols = Math.max(0, ...sample.map((r) => r.length), header ? header.length : 0);
   if (!sample.length || !ncols) return mapping;
-  const used = () => new Set(Object.values(mapping).filter((v) => v !== null));
+  const used = () => new Set([...Object.values(mapping).filter((v) => v !== null), ...ignored]);
   const frac = (col, test) => sample.reduce((n, r) => n + (test(cleanCell(r[col] ?? '')) ? 1 : 0), 0) / sample.length;
   const stats = [];
   for (let c = 0; c < ncols; c++) {

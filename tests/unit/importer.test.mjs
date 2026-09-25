@@ -129,3 +129,12 @@ test('helpers: delimiter, header, pinyin classification', () => {
   for (const p of ['xué xí', 'péng you', 'xue2 xi2', 'tu2shu1guan3', "xi'an", 'lü4']) assert.equal(isPinyinCell(p), true, p);
   for (const p of ['friend', 'to study', 'library', 'good', '']) assert.equal(isPinyinCell(p), false, p);
 });
+
+test('Hack Chinese "all studied words" export: Status/Interval are not definitions', () => {
+  const text = '\ufeffSimplified,Traditional,Status,Interval\n便宜,便宜,strong,43.705473\n笔,筆,strong,151.223504\n颜色,顏色,weak,65.1\n';
+  const r = parseVocabText(text);
+  assert.deepEqual(r.mapping, { s: 0, t: 1, p: null, d: null });
+  assert.equal(r.entries.length, 3);
+  assert.deepEqual(r.entries[1], { s: '笔', t: '筆' });
+  assert.equal(r.entries[0].d, undefined);
+});
