@@ -118,6 +118,10 @@ async function boot() {
   };
   app.sync = runSync;
   runSync();
+
+  // Ask the browser not to evict our IndexedDB/cache under storage pressure (best effort; iOS
+  // grants it for installed home-screen apps, Chrome/Firefox for engaged or installed sites).
+  try { navigator.storage?.persist?.().catch(() => {}); } catch { /* ignore */ }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') runSync(); });
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
