@@ -343,7 +343,6 @@ body[data-route="study"] main { max-width: 640px; }
 .tok .py.t4 { color: var(--t4); }
 .tok .py.t5 { color: var(--t5); }
 .translation { margin: 4px 0 0; font-size: 1.05rem; color: var(--fg); }
-.translation .mt-label { font-size: 0.7rem; white-space: nowrap; }
 .card-tools { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
 .chip.toggle {
   border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--muted);

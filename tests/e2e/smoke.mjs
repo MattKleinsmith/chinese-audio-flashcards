@@ -192,14 +192,22 @@ async function main() {
     ok('sentence card shown, no duration UI');
     await page.click('[data-testid=reveal]');
     await page.waitForSelector('[data-testid=sentence] .tok');
+    assert.equal(await page.locator('[data-testid=translation]').count(), 0, 'translation hidden by default');
+    assert.equal(await page.locator('[data-testid=sentence] .py').count(), 0, 'pinyin hidden by default');
+    assert.equal(await page.locator('[data-testid=sentence] .hz[class*=" t"]').count(), 0, 'no tone colours by default');
+    await page.click('[data-testid=card-pinyin]');
+    await page.waitForSelector('[data-testid=sentence] .py');
     const tokCount = await page.locator('[data-testid=sentence] .tok').count();
     const hzCount = await page.locator('[data-testid=sentence] .tok .hz').count();
     const pyCount = await page.locator('[data-testid=sentence] .tok .py').count();
     assert.ok(tokCount >= 1 && hzCount === pyCount && pyCount >= tokCount, `tokens ${tokCount}, hz ${hzCount}, py ${pyCount}`);
     assert.equal(await page.locator('[data-testid=sentence] ruby').count(), 0, 'grid layout, not <ruby>');
+    await page.click('[data-testid=card-translation]');
+    await page.waitForSelector('[data-testid=translation]');
     const enText = (await page.textContent('[data-testid=translation]')).trim();
-    assert.match(enText, /[A-Za-z]{2,}.*· machine translation$/, `sentence translation shown: ${enText}`);
-    ok(`translation shown: ${enText.slice(0, 50)}`);
+    assert.match(enText, /[A-Za-z]{2,}/, `sentence translation shown: ${enText}`);
+    assert.doesNotMatch(enText, /machine translation/);
+    ok(`translation chip shows: ${enText.slice(0, 50)}`);
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     const copied = await page.evaluate(async () => {
       const el = document.querySelector('[data-testid=sentence]');
@@ -214,7 +222,7 @@ async function main() {
     ok(`copied selection is hanzi only: ${copied}`);
     const hzToneClasses = await page.locator('[data-testid=sentence] .hz[class*=" t"]').count();
     assert.ok(hzToneClasses >= 1, 'characters carry tone classes');
-    await page.click('[data-testid=card-pinyin]'); // chip on the card itself
+    await page.click('[data-testid=card-pinyin]'); // chip on the card itself: off again
     await page.waitForSelector('[data-testid=sentence].no-pinyin');
     assert.equal(await page.getAttribute('[data-testid=card-pinyin]', 'aria-checked'), 'false');
     assert.equal(await page.locator('[data-testid=sentence] .py').count(), 0, 'pinyin hidden');
@@ -222,7 +230,7 @@ async function main() {
     await page.click('[data-testid=menu]');
     await page.click('[data-testid=menu-pinyin]');
     await page.waitForSelector('[data-testid=sentence]:not(.no-pinyin) .py');
-    ok('pinyin chip on the card hides pinyin and tone colours; the menu item restores them');
+    ok('pinyin chip toggles pinyin and tone colours; the menu item does the same');
     const pyBelow = await page.evaluate(() => {
       const t = document.querySelector('[data-testid=sentence] .tok');
       return t.querySelector('.py').getBoundingClientRect().top >= t.querySelector('.hz').getBoundingClientRect().bottom - 2;

@@ -49,17 +49,17 @@ export function render(root, app, [mode]) {
     h('button', { type: 'button', role: 'menuitem', 'data-testid': 'menu-suspend', 'aria-label': 'Suspend card', onclick: () => { closeMenu(); suspendCard(); } }, 'Suspend card'),
     h('button', { type: 'button', role: 'menuitem', 'data-testid': 'menu-bad-audio', 'aria-label': 'Report bad audio', onclick: () => { closeMenu(); reportBadAudio(); } }, 'Report bad audio'),
     h('button', {
-      type: 'button', role: 'menuitemcheckbox', 'data-testid': 'menu-pinyin', 'aria-checked': String(settings.showPinyin !== false),
+      type: 'button', role: 'menuitemcheckbox', 'data-testid': 'menu-pinyin', 'aria-checked': String(settings.showPinyin === true),
       'aria-label': 'Show pinyin',
       onclick: async (e) => {
         const btn = e.currentTarget; // null after the await, so capture it first
         closeMenu();
-        await state.setSetting('showPinyin', settings.showPinyin === false);
-        btn.setAttribute('aria-checked', String(settings.showPinyin !== false));
-        btn.textContent = settings.showPinyin === false ? 'Show pinyin' : 'Hide pinyin';
+        await state.setSetting('showPinyin', settings.showPinyin !== true);
+        btn.setAttribute('aria-checked', String(settings.showPinyin === true));
+        btn.textContent = settings.showPinyin === true ? 'Hide pinyin' : 'Show pinyin';
         if (item && revealed) renderCard();
       },
-    }, settings.showPinyin === false ? 'Show pinyin' : 'Hide pinyin'));
+    }, settings.showPinyin === true ? 'Hide pinyin' : 'Show pinyin'));
   const menuBtn = h('button', {
     class: 'icon-btn', type: 'button', 'aria-label': 'Card menu', 'aria-haspopup': 'menu', 'aria-expanded': 'false', 'data-testid': 'menu',
     onclick: (e) => { e.stopPropagation(); menu.hidden ? openMenu() : closeMenu(); },
@@ -276,21 +276,27 @@ export function render(root, app, [mode]) {
   }
 
   // ---- Answers --------------------------------------------------------------------------------
-  /** Pinyin on/off chip shown on the card back; changes the persistent setting and re-renders. */
-  function pinyinToggle() {
-    const on = settings.showPinyin !== false;
+  /** Sticky on/off chips shown on the card back (pinyin, machine translation). Each flips a
+   *  persistent setting and re-renders the card, so a choice made here applies to the following
+   *  cards too until it is flipped back. */
+  function settingChip(key, label, testid) {
+    const on = settings[key] === true;
     return h('button', {
       class: `chip toggle${on ? ' on' : ''}`, type: 'button', role: 'switch', 'aria-checked': String(on),
-      'data-testid': 'card-pinyin', 'aria-label': 'Show pinyin',
+      'data-testid': testid, 'aria-label': `Show ${label.toLowerCase()}`,
       onclick: async (e) => {
         e.stopPropagation();
-        await state.setSetting('showPinyin', !on);
-        const mi = menu.querySelector('[data-testid=menu-pinyin]');
-        if (mi) { mi.setAttribute('aria-checked', String(!on)); mi.textContent = on ? 'Show pinyin' : 'Hide pinyin'; }
+        await state.setSetting(key, !on);
+        if (key === 'showPinyin') {
+          const mi = menu.querySelector('[data-testid=menu-pinyin]');
+          if (mi) { mi.setAttribute('aria-checked', String(!on)); mi.textContent = on ? 'Show pinyin' : 'Hide pinyin'; }
+        }
         renderCard();
       },
-    }, on ? 'Pinyin on' : 'Pinyin off');
+    }, `${on ? '✓ ' : ''}${label}`);
   }
+  const pinyinToggle = () => settingChip('showPinyin', 'Pinyin', 'card-pinyin');
+  const translationToggle = () => settingChip('showTranslation', 'Machine translation', 'card-translation');
 
   /** Hanzi split into per-character spans coloured by the tone of the matching pinyin syllable. */
   function colouredHanzi(hanzi, pinyin, toneColors) {
@@ -301,7 +307,7 @@ export function render(root, app, [mode]) {
   }
 
   function wordBack(w) {
-    const showPy = settings.showPinyin !== false;
+    const showPy = settings.showPinyin === true;
     const tc = settings.toneColors && showPy;
     return h('div', { class: 'answer word-answer', 'data-testid': 'answer' },
       h('div', { class: 'hanzi', lang: 'zh-Hans', 'data-testid': 'answer-hanzi' }, ...colouredHanzi(w.s, w.p, tc)),
@@ -317,7 +323,7 @@ export function render(root, app, [mode]) {
   function closePopover() { if (popover) { popover.remove(); popover = null; } }
 
   function sentenceBack(s) {
-    const showPy = settings.showPinyin !== false;
+    const showPy = settings.showPinyin === true;
     const tc = settings.toneColors && showPy;
     const toks = sentenceTokens(s);
     const vocabSet = new Set(state.vocab.keys());
@@ -340,11 +346,11 @@ export function render(root, app, [mode]) {
       wrap.append(tok);
     });
     const box = h('div', { class: 'answer sentence-answer', 'data-testid': 'answer' }, wrap,
-      s.en && settings.showTranslation !== false
-        ? h('p', { class: 'translation center', 'data-testid': 'translation', lang: 'en' }, s.en,
-          h('span', { class: 'muted small mt-label' }, ' · machine translation'))
+      s.en && settings.showTranslation === true
+        ? h('p', { class: 'translation center', 'data-testid': 'translation', lang: 'en' }, s.en)
         : null,
-      h('div', { class: 'card-tools' }, h('span', { class: 'muted small' }, 'Tap a word for its meaning'), pinyinToggle()));
+      h('p', { class: 'muted small center' }, 'Tap a word for its meaning'),
+      h('div', { class: 'card-tools' }, pinyinToggle(), s.en ? translationToggle() : null));
     box.addEventListener('click', (e) => { if (!e.target.closest('.popover')) closePopover(); });
     return box;
   }

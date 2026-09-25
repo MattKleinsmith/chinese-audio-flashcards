@@ -60,10 +60,13 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
    - Tap 0.5× then 1.25×: the tempo changes but the voice keeps its pitch. Leave the app and
      come back: the chosen speed is remembered (it is also in Settings).
 5. Tap **Show answer**, or tap anywhere on the lower half of the card. Check the back:
-   - large Hanzi
-   - tone-coloured pinyin in the Pleco / Hack Chinese scheme (1 red, 2 green, 3 blue, 4 purple, neutral grey)
+   - large Hanzi, plain (no pinyin, no colours) by default
    - up to 3 definitions
    - an HSK badge
+   - a **Pinyin** chip. Tap it: pinyin appears and both pinyin and characters take the
+     Pleco / Hack Chinese tone colours (1 red, 2 green, 3 blue, 4 purple, neutral grey). The
+     choice sticks for the next cards until you tap it again. Sentence cards also have a
+     **Machine translation** chip that works the same way.
 6. The transport controls stay on the back (smaller). Pause, rewind and speed still work.
 7. Grade with Again / Hard / Good / Easy. Each button shows its next interval (e.g. `1m`,
    `10m`, `4d`). Press **Again** on one card: it comes back 3–6 cards later in the same session.
