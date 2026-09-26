@@ -24,7 +24,9 @@ a few reps while waiting in line.
    button pauses and resumes; the row under it restarts the clip or jumps back 5 s, 1 s, 0.5 s
    or 0.1 s (tap repeatedly for fine control); the chips set the speed from 0.25× to 1.5× with
    the pitch preserved. Tap *Show answer* to see the card, then grade yourself. Keyboard: space
-   play/pause, ← back 1 s (shift 5 s, alt 0.1 s), r restart, [ ] slower/faster, 1–4 grade.
+   play/pause, ← back 1 s (shift 5 s, alt 0.1 s), r restart, [ ] slower/faster, 1–4 grade,
+   z or Backspace undo. The ↶ button brings back the previous card, revealed, with its grade
+   reverted, handy for showing someone the card you just did.
 3. A sentence card only appears when you know every word in it. In Settings you can allow 1 or
    2 unknown words. Tap any word in a revealed sentence to see its definition, or add it to
    your vocab.

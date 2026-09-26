@@ -123,7 +123,11 @@ export class AppState {
     await safe(this.db.put('cards', card), 'save card');
   }
 
-  async logReview(entry) { await safe(this.db.add('reviews', { ...entry }), 'log review'); }
+  /** Append to the review log; resolves to the row id (used by Undo) or undefined. */
+  async logReview(entry) { return safe(this.db.add('reviews', { ...entry }), 'log review'); }
+
+  /** Remove one review-log row (Undo). */
+  async deleteReview(id) { if (id !== undefined && id !== null) await safe(this.db.delete('reviews', id), 'delete review'); }
 
   async suspendClip(key) {
     this.suspendedClips.add(key);

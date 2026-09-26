@@ -70,7 +70,9 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
 6. The transport controls stay on the back (smaller). Pause, rewind and speed still work.
 7. Grade with Again / Hard / Good / Easy. Each button shows its next interval (e.g. `1m`,
    `10m`, `4d`). Press **Again** on one card: it comes back 3–6 cards later in the same session.
-8. Try the ≡ menu: *Skip*, *Suspend card*, *Report bad audio*. Each one moves on to the next card.
+8. Tap ↶ in the top bar (or ≡ → *Undo last card*): the previous card comes back revealed with
+   its audio, the grade is reverted and the counter steps back. Grade it again to continue.
+9. Try the ≡ menu: *Skip*, *Suspend card*, *Report bad audio*. Each one moves on to the next card.
 9. Close the app completely, then reopen it. The Home counts should show the progress you made:
    cards graded Good are due again later today (10-minute step), and the new count drops.
 

@@ -161,6 +161,16 @@ async function main() {
     await page.click('[data-testid=grade-good]');
     await page.waitForFunction(() => /^1\//.test(document.querySelector('[data-testid=session-count]')?.textContent || ''));
     ok('graded Good; session count 1/…');
+    assert.equal((await page.evaluate(() => window.__clf.debug())).reviews, 1);
+    await page.click('[data-testid=undo]');
+    await page.waitForFunction(() => /^0\//.test(document.querySelector('[data-testid=session-count]')?.textContent || ''));
+    await page.waitForSelector('[data-testid=answer-hanzi]');
+    assert.equal((await page.textContent('[data-testid=answer-hanzi]')).trim(), hanzi, 'undo shows the same card, revealed');
+    assert.equal((await page.evaluate(() => window.__clf.debug())).reviews, 0, 'review-log row removed');
+    assert.equal(await page.getAttribute('[data-testid=undo]', 'disabled'), '', 'nothing more to undo');
+    ok('undo went back to the previous card and reverted the grade');
+    await page.click('[data-testid=grade-good]');
+    await page.waitForFunction(() => /^1\//.test(document.querySelector('[data-testid=session-count]')?.textContent || ''));
 
     step('4b. Local data & activity screen');
     await page.goto(url + '#/settings');

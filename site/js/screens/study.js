@@ -45,6 +45,7 @@ export function render(root, app, [mode]) {
   // ---- Static chrome --------------------------------------------------------------------------
   const counter = h('span', { class: 'session-count', 'data-testid': 'session-count', 'aria-label': 'Cards done this session' });
   const menu = h('div', { class: 'menu', role: 'menu', hidden: true },
+    h('button', { type: 'button', role: 'menuitem', 'data-testid': 'menu-undo', 'aria-label': 'Undo last grade', onclick: () => { closeMenu(); undo(); } }, 'Undo last card'),
     h('button', { type: 'button', role: 'menuitem', 'data-testid': 'menu-skip', 'aria-label': 'Skip card', onclick: () => { closeMenu(); skip(); } }, 'Skip'),
     h('button', { type: 'button', role: 'menuitem', 'data-testid': 'menu-suspend', 'aria-label': 'Suspend card', onclick: () => { closeMenu(); suspendCard(); } }, 'Suspend card'),
     h('button', { type: 'button', role: 'menuitem', 'data-testid': 'menu-bad-audio', 'aria-label': 'Report bad audio', onclick: () => { closeMenu(); reportBadAudio(); } }, 'Report bad audio'),
@@ -67,9 +68,18 @@ export function render(root, app, [mode]) {
   function openMenu() { menu.hidden = false; menuBtn.setAttribute('aria-expanded', 'true'); }
   function closeMenu() { menu.hidden = true; menuBtn.setAttribute('aria-expanded', 'false'); }
 
+  // Undo history: one entry per grade or skip, newest last (see undo()).
+  const history = [];
+  const undoBtn = h('button', {
+    class: 'icon-btn undo', type: 'button', 'data-testid': 'undo', 'aria-label': 'Undo: go back to the previous card', title: 'Undo', disabled: true,
+    onclick: () => undo(),
+  }, '↶');
+  const paintUndo = () => { undoBtn.disabled = history.length === 0; };
+
   const bar = h('div', { class: 'study-bar' },
     h('a', { class: 'icon-btn', href: '#/', 'aria-label': 'Back to home' }, '←'),
     h('span', { class: 'mode-name' }, modeInfo.label),
+    undoBtn,
     counter,
     h('span', { class: 'menu-wrap' }, menuBtn, menu));
 
@@ -197,6 +207,7 @@ export function render(root, app, [mode]) {
   }
 
   function renderCard() {
+    paintUndo();
     clear(cardArea); clear(actions);
     cardArea.classList.toggle('revealed', revealed);
     const label = item.kind === 'word' ? 'Word' : `Sentence${clip.gender ? ` · ${clip.gender}` : ''}`;
@@ -237,15 +248,18 @@ export function render(root, app, [mode]) {
       const wasNew = !card.state || card.state.status === 'new';
       const next = { ...card, state: gradeCard(card.state, g, now) };
       if (wasNew && !next.introducedAt) next.introducedAt = now;
+      const entry = { kind: 'grade', item, pos: session.pos, cardBefore: structuredClone(card), done: session.done, again: session.again, reviewId: null, insertedAt: null };
       await state.saveCard(next);
-      await state.logReview({ cardId: item.cardId, ts: now, grade: g, elapsedMs: now - shownAt });
+      entry.reviewId = await state.logReview({ cardId: item.cardId, ts: now, grade: g, elapsedMs: now - shownAt });
       session.done++;
       if (g === 'again') {
         session.again++;
         // Learning step inside the session: show it again 3–6 positions later.
         const at = Math.min(session.queue.length, session.pos + randInt(3, 6));
         session.queue.splice(at, 0, { ...item });
+        entry.insertedAt = at;
       }
+      history.push(entry);
       session.pos++;
       await showCard();
     } finally { busy = false; }
@@ -255,7 +269,34 @@ export function render(root, app, [mode]) {
     session.queue = session.queue.filter((it, i) => i <= session.pos || it.cardId !== cardId);
   }
 
-  async function skip() { session.pos++; await showCard(); }
+  async function skip() {
+    if (item) history.push({ kind: 'skip', item, pos: session.pos, cardBefore: null, done: session.done, again: session.again, reviewId: null, insertedAt: null });
+    session.pos++;
+    await showCard();
+  }
+
+  /**
+   * Undo: go back to the previous card, shown revealed, with that grade reverted (card schedule
+   * restored, review-log row removed, session counters rewound). Useful for "wait, show me that
+   * one again" as much as for mis-taps.
+   */
+  async function undo() {
+    if (busy) return;
+    const entry = history.pop();
+    paintUndo();
+    if (!entry) { app.toast('Nothing to undo'); return; }
+    busy = true;
+    try {
+      if (entry.insertedAt !== null && session.queue[entry.insertedAt]?.cardId === entry.item.cardId) session.queue.splice(entry.insertedAt, 1);
+      if (entry.cardBefore) await state.saveCard(entry.cardBefore);
+      if (entry.reviewId !== null && entry.reviewId !== undefined) await state.deleteReview(entry.reviewId);
+      session.done = entry.done; session.again = entry.again; session.pos = entry.pos;
+      if (session.queue[session.pos]?.cardId !== entry.item.cardId) session.queue.splice(session.pos, 0, entry.item);
+    } finally { busy = false; }
+    await showCard();
+    reveal();
+    app.toast(entry.kind === 'grade' ? 'Undid the last grade — grade it again' : 'Back to the skipped card', { ms: 2500 });
+  }
 
   async function suspendCard() {
     await state.saveCard({ ...card, suspended: true });
@@ -419,7 +460,9 @@ export function render(root, app, [mode]) {
           h('div', { class: 'stat' }, h('strong', {}, `${accuracy}%`), h('span', { class: 'muted small' }, 'not “Again”')),
           h('div', { class: 'stat' }, h('strong', {}, formatDuration(Date.now() - session.startedAt)), h('span', { class: 'muted small' }, 'time')))));
     }
+    paintUndo();
     actions.append(h('div', { class: 'row gap' },
+      history.length ? h('button', { class: 'btn grow', type: 'button', 'data-testid': 'summary-undo', 'aria-label': 'Undo last card', onclick: () => undo() }, '↶ Last card') : null,
       h('button', {
         class: 'btn primary grow', type: 'button', 'data-testid': 'study-more', 'aria-label': 'Study more',
         onclick: () => {
@@ -442,6 +485,7 @@ export function render(root, app, [mode]) {
     else if (e.key === 'Enter' && !revealed && e.target === document.body) { e.preventDefault(); reveal(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); player.seekBy(e.shiftKey ? -5 : e.altKey ? -0.1 : -1); }
     else if (e.key === 'r' || e.key === 'R') playCurrent();
+    else if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') { e.preventDefault(); undo(); }
     else if (e.key === '[' || e.key === ']') {
       const i = RATES.findIndex((r) => Math.abs(r - player.rate) < 1e-6);
       const j = Math.min(RATES.length - 1, Math.max(0, (i < 0 ? RATES.indexOf(1) : i) + (e.key === ']' ? 1 : -1)));

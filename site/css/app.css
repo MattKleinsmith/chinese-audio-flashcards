@@ -232,6 +232,8 @@ body[data-route="study"] main { max-width: 640px; }
 .study-bar { display: flex; align-items: center; gap: 4px; padding: calc(env(safe-area-inset-top) + 4px) 8px 4px; min-height: 56px; }
 .mode-name { font-weight: 700; flex: 1; }
 .session-count { font-variant-numeric: tabular-nums; color: var(--muted); padding: 0 6px; }
+.icon-btn.undo { font-size: 1.4rem; min-width: 44px; }
+.icon-btn.undo:disabled { opacity: 0.3; cursor: default; }
 .menu-wrap { position: relative; }
 .menu { position: absolute; right: 0; top: 100%; z-index: 20; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); display: flex; flex-direction: column; min-width: 200px; padding: 4px; }
 .menu button { min-height: 48px; text-align: left; padding: 0 14px; border: 0; background: transparent; color: var(--fg); font: inherit; border-radius: 8px; cursor: pointer; }
