@@ -66,7 +66,7 @@ export function render(root, app) {
     clear(chips);
     for (const f of FILTERS) {
       chips.append(h('button', {
-        type: 'button', class: `chip${filter === f.id ? ' on' : ''}`, 'aria-pressed': String(filter === f.id), 'aria-label': `Show ${f.label}`,
+        type: 'button', class: `chip${filter === f.id ? ' on' : ''}`, 'aria-pressed': String(filter === f.id), 'aria-label': `Show ${f.label}`, 'data-testid': `filter-${f.id}`,
         onclick: () => { filter = f.id; limit = PAGE; draw(); },
       }, f.label));
     }
@@ -74,7 +74,7 @@ export function render(root, app) {
     for (const v of state.vocab.values()) {
       const w = state.wordFor(v.s);
       const status = state.wordStatus(v.s);
-      if (filter === 'noaudio' && w) continue;
+      if (filter === 'noaudio' && state.data.hasAudio(v.s, v.t)) continue; // dictionary-only entries still count as no audio
       if (filter === 'suspended' && status !== 'suspended') continue;
       if (!matches(v, w)) continue;
       rows.push({ v, w, status });

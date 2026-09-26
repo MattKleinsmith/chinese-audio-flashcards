@@ -272,6 +272,23 @@ async function main() {
     ok(`popover: "${pop.replace(/\s+/g, ' ').trim().slice(0, 60)}"`);
     await page.click('[data-testid=grade-good]');
 
+    step('6b. Vocab list: "No audio" filter lists words that have a reading but no clip');
+    await page.goto(url + '#/import');
+    await page.fill('[data-testid=import-text]', '高速公路\n学习');
+    await page.click('[data-testid=import-preview-btn]');
+    await page.waitForSelector('[data-testid=import-confirm]');
+    await page.click('[data-testid=import-confirm]');
+    await toastText(page);
+    await page.goto(url + '#/vocab');
+    await page.waitForSelector('[data-testid=vocab-row]');
+    await page.click('[data-testid=filter-noaudio]');
+    await page.waitForFunction(() => [...document.querySelectorAll('[data-testid=vocab-row] .hz')].some((e) => e.textContent === '高速公路'));
+    const noAudioRows = await page.$$eval('[data-testid=vocab-row]', (els) => els.map((e) => ({ hz: e.querySelector('.hz').textContent, has: e.querySelector('.audio-flag').classList.contains('has'), py: e.querySelector('.pinyin')?.textContent || '' })));
+    assert.ok(noAudioRows.length >= 1 && noAudioRows.every((r) => !r.has), 'only rows without audio');
+    assert.ok(!noAudioRows.some((r) => r.hz === '学习'), '学习 (has audio) is filtered out');
+    assert.ok(noAudioRows.find((r) => r.hz === '高速公路').py.length > 0, 'no-audio row still shows a reading');
+    ok(`No audio filter: ${noAudioRows.length} rows, all without a clip, readings present`);
+
     step('7. Export backup');
     await page.goto(url + '#/settings');
     await page.waitForSelector('[data-testid=about-sources] li');
@@ -281,7 +298,7 @@ async function main() {
     assert.match(download.suggestedFilename(), /^clf-backup-\d{8}\.json$/);
     const backupPath = await download.path();
     const backup = JSON.parse(readFileSync(backupPath, 'utf8'));
-    const expected = new Set([...words.filter((w) => w.hsk === 1 || w.hsk === 2).map((w) => w.s), '学习', '朋友', '图书馆']).size;
+    const expected = new Set([...words.filter((w) => w.hsk === 1 || w.hsk === 2).map((w) => w.s), '学习', '朋友', '图书馆', '高速公路']).size; // 高速公路 was imported in step 6b
     assert.equal(backup.vocab.length, expected, `vocab length ${backup.vocab.length} = HSK1+2 ∪ imports (${expected})`);
     assert.ok(backup.vocab.length >= Math.min(150, expected));
     assert.ok(backup.reviews.length >= 2 && backup.cards.length >= 2);
