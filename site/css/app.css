@@ -3,15 +3,16 @@
    NOTE: there is intentionally no styling for audio progress/duration — none exists. */
 
 :root {
-  --bg: #faf7f2;
+  /* "Jade" theme: cool neutral surfaces, jade-green accent. Tone and grade colours are fixed. */
+  --bg: #f4f6f7;
   --surface: #ffffff;
-  --surface-2: #f3eee6;
-  --fg: #1c1917;
-  --muted: #78716c;
-  --border: #e7e0d6;
-  --accent: #c2410c;
+  --surface-2: #e9eef0;
+  --fg: #16201f;
+  --muted: #64716f;
+  --border: #d9e0e2;
+  --accent: #0f7b6c;
   --accent-fg: #ffffff;
-  --accent-soft: #fde7da;
+  --accent-soft: #d7efe9;
   --danger: #b91c1c;
   --ok: #15803d;
   --t1: #e30000; /* tone colours: Pleco scheme (also used by Hack Chinese): 1 red, 2 green, 3 blue, 4 purple, 5 grey */
@@ -32,15 +33,15 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #141210;
-    --surface: #1f1c19;
-    --surface-2: #2a2622;
-    --fg: #f5f1eb;
-    --muted: #a8a29e;
-    --border: #3a3430;
-    --accent: #fb923c;
-    --accent-fg: #1c1917;
-    --accent-soft: #3b2415;
+    --bg: #0f1414;
+    --surface: #182020;
+    --surface-2: #212b2b;
+    --fg: #eef3f2;
+    --muted: #97a5a3;
+    --border: #2c3838;
+    --accent: #3fcbb0;
+    --accent-fg: #0b1716;
+    --accent-soft: #163a35;
     --danger: #f87171;
     --ok: #4ade80;
     --t1: #ff5a5a; /* Pleco hues, lightened for dark backgrounds */
@@ -52,15 +53,15 @@
   }
 }
 :root[data-theme="dark"] {
-  --bg: #141210;
-  --surface: #1f1c19;
-  --surface-2: #2a2622;
-  --fg: #f5f1eb;
-  --muted: #a8a29e;
-  --border: #3a3430;
-  --accent: #fb923c;
-  --accent-fg: #1c1917;
-  --accent-soft: #3b2415;
+  --bg: #0f1414;
+  --surface: #182020;
+  --surface-2: #212b2b;
+  --fg: #eef3f2;
+  --muted: #97a5a3;
+  --border: #2c3838;
+  --accent: #3fcbb0;
+  --accent-fg: #0b1716;
+  --accent-soft: #163a35;
   --danger: #f87171;
   --ok: #4ade80;
   --t1: #ff5a5a; /* Pleco hues, lightened for dark backgrounds */
