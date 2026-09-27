@@ -3,7 +3,8 @@
 import { deflateSync } from 'node:zlib';
 import { writeFileSync } from 'node:fs';
 
-const ACCENT = [0x0f, 0x7b, 0x6c];
+const ACCENT = [0xb9, 0xa6, 0xe6];
+const GLYPH = [0x2a, 0x1f, 0x45];
 const crcTable = new Uint32Array(256).map((_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
 const crc32 = (buf) => { let c = 0xffffffff; for (const b of buf) c = crcTable[(c ^ b) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
 const chunk = (type, data) => { const len = Buffer.alloc(4); len.writeUInt32BE(data.length); const td = Buffer.concat([Buffer.from(type), data]); const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(td)); return Buffer.concat([len, td, crc]); };
@@ -23,7 +24,7 @@ function png(size) {
       let rgba = [0, 0, 0, 0];
       if (inside) {
         const d = Math.hypot(px - cx, py - cy);
-        rgba = d <= cr ? (inTri(px, py) ? [...ACCENT, 255] : [255, 255, 255, 255]) : [...ACCENT, 255];
+        rgba = d <= cr ? (inTri(px, py) ? [...ACCENT, 255] : [...GLYPH, 255]) : [...ACCENT, 255];
       }
       raw.set(rgba, y * (size * 4 + 1) + 1 + x * 4);
     }
