@@ -152,6 +152,12 @@ def build_sentences(args, hsk_levels: dict[str, int], out_dir: Path, cache: dict
                      "gender": info.get("gender", "unknown"), "age": info.get("age", ""),
                      "accent": info.get("accent", "")},
         })
+    import exclude as exclude_mod
+    bad = exclude_mod.excluded_ids()
+    if bad:
+        before = len(entries)
+        entries = [e for e in entries if e["id"] not in bad]
+        log(f"exclude: dropped {before - len(entries)} sentences listed in pipeline/exclude.json")
     entries.sort(key=lambda e: e["id"])
     # The corpus pinyin records what each speaker said (accents, slips); show standard readings.
     fixed = pinyin_fix.apply(entries, cedict_mod.load(args.work_dir))

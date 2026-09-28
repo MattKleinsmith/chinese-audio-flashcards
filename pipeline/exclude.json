@@ -1,0 +1,11 @@
+{
+  "_comment": "Sentence clips whose audio does not match the transcript (found by pipeline/asr_check.py, confirmed by a second Whisper 'medium' pass). build.py drops these; pipeline/exclude.py removes them from an existing bundle.",
+  "sentences": {
+    "s_a3_SSB12030051": "transcript 爱而为一; audio says 好宝贝",
+    "s_a3_SSB08510057": "transcript 类似爱情; audio has extra words (这就是…爱情)",
+    "s_a3_SSB10640173": "transcript 阳光下的人物有什么; audio ends 又是阴谋",
+    "s_a3_SSB11000420": "transcript 推了你一把; both models hear 吹了泥巴",
+    "s_a3_SSB10640271": "transcript 神话类型的电视剧有什么; audio ends 有谁吗",
+    "s_a3_SSB11360491": "transcript 发动家企业有什么; audio garbled"
+  }
+}

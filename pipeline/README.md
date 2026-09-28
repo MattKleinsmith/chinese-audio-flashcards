@@ -59,6 +59,12 @@ the context: 得 dei3, 教 jiao1, 重 chong in 重来) and otherwise replaces it
 dictionary reading or the nearest valid one, keeping tone-sandhi tones. `build.py` applies it;
 `pipeline/.venv/bin/python pipeline/pinyin_fix.py -v` fixes an existing bundle in place.
 
+**Audio/transcript check.** `asr_check.py` transcribes every sentence clip with a local Whisper
+model and scores it against the transcript by toneless pinyin (homophones like 他/她 don't count).
+Clips that a second, larger-model pass confirms as mismatched go into `exclude.json`; `build.py`
+skips them and `exclude.py` removes them from an existing bundle. The first sweep (Whisper small,
+then medium on the 33 flagged clips) found 6 genuinely mismatched clips out of 2,000.
+
 `build_dict.py` writes `site/data/dict.json`: CC-CEDICT pinyin and glosses for words that have
 no audio entry (sentence tokens and characters, HSK words without a clip, and the synced Hack
 Chinese words), so the app can always show a reading. Heteronyms (重 zhòng / chóng) also get an
