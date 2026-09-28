@@ -92,6 +92,12 @@ export function render(root, app, [mode]) {
     if (!menu.hidden && !menu.contains(e.target) && e.target !== menuBtn) closeMenu();
   };
   document.addEventListener('click', onDocClick);
+  // Word popover: any tap outside it closes it (tapping another word opens that one instead).
+  // Capture phase so it runs before the tapped control's own handler.
+  const onDocPointer = (e) => {
+    if (popover && !popover.contains(e.target) && !e.target.closest?.('.tok')) closePopover();
+  };
+  document.addEventListener('pointerdown', onDocPointer, true);
 
   // ---- Transport: play/pause, restart, rewind steps, speed --------------------------------------
   // The only audio UI. Relative rewinds and a speed choice are fine; elapsed time, duration,
@@ -421,8 +427,7 @@ export function render(root, app, [mode]) {
     popover = h('div', { class: 'popover', role: 'dialog', 'aria-label': `Meaning of ${text}`, 'data-testid': 'popover' },
       h('div', { class: 'pop-head' },
         h('span', { class: 'pop-hz', lang: 'zh-Hans' }, text),
-        pinyinEl(pinyin, { toneColors: settings.toneColors }),
-        h('button', { class: 'icon-btn small', type: 'button', 'aria-label': 'Close', onclick: (e) => { e.stopPropagation(); closePopover(); } }, '✕')),
+        pinyinEl(pinyin, { toneColors: settings.toneColors })),
       defs.length ? h('ul', { class: 'defs' }, defs.slice(0, 3).map((d) => h('li', {}, d)))
         : w && w.charGlosses
           ? h('ul', { class: 'defs chars' }, w.charGlosses.map((cg) => h('li', {}, h('span', { lang: 'zh-Hans' }, cg.c), ' ', pinyinEl(cg.p, { toneColors: settings.toneColors, className: 'pinyin small' }), cg.d.length ? ` — ${cg.d.join('; ')}` : '')))
@@ -480,6 +485,7 @@ export function render(root, app, [mode]) {
   //      r = restart, [ ] = slower / faster, 1–4 = grade --------------------------------------
   const onKey = (e) => {
     if (e.target.closest && e.target.closest('input, textarea, select')) return;
+    if (e.key === 'Escape' && popover) { closePopover(); return; }
     if (e.ctrlKey || e.metaKey || !item) return;
     if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); togglePlay(); }
     else if (e.key === 'Enter' && !revealed && e.target === document.body) { e.preventDefault(); reveal(); }
@@ -519,6 +525,7 @@ export function render(root, app, [mode]) {
     document.removeEventListener('keydown', onKey);
     document.removeEventListener('copy', onCopy);
     document.removeEventListener('click', onDocClick);
+    document.removeEventListener('pointerdown', onDocPointer, true);
     unsubscribe();
     player.stop();
     app.session = null;

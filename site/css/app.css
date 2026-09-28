@@ -264,6 +264,9 @@ body[data-route="study"] main { max-width: 640px; }
   font: inherit; cursor: pointer; touch-action: manipulation; flex: none;
   box-shadow: 0 6px 24px color-mix(in srgb, var(--accent) 35%, transparent);
   transition: transform 0.1s ease;
+  /* Room for the pulse ring, which grows ~24px past the edge (~16px on the small button), so it
+     never runs into the label above or the transport buttons below. */
+  margin: 12px 0;
 }
 .replay:active { transform: scale(0.96); }
 .replay-icon { font-size: 48px; line-height: 1; margin-left: 6px; }
@@ -275,7 +278,7 @@ body[data-route="study"] main { max-width: 640px; }
   border: 3px solid var(--accent); opacity: 0.6; animation: pulse 1.2s ease-out infinite;
 }
 @keyframes pulse { from { transform: scale(1); opacity: 0.6; } to { transform: scale(1.25); opacity: 0; } }
-.replay.small { width: 64px; height: 64px; }
+.replay.small { width: 64px; height: 64px; margin: 6px 0; }
 .replay.small .replay-icon { font-size: 26px; margin-left: 3px; }
 .replay.small .replay-hint { font-size: 0.65rem; }
 @media (prefers-reduced-motion: reduce) { .replay.playing::after { animation: none; opacity: 0.5; } }
@@ -311,7 +314,6 @@ body[data-route="study"] main { max-width: 640px; }
 }
 .speed.active { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
 .speeds.small .speed { height: 28px; font-size: 0.72rem; }
-.card-area.revealed .transport, .card-area.revealed .speeds { margin-top: -6px; }
 
 
 .answer { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; text-align: center; }

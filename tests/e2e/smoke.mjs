@@ -270,6 +270,19 @@ async function main() {
     await page.waitForSelector('[data-testid=popover]');
     const pop = await page.textContent('[data-testid=popover]');
     ok(`popover: "${pop.replace(/\s+/g, ' ').trim().slice(0, 60)}"`);
+    assert.equal(await page.locator('[data-testid=popover] button[aria-label=Close]').count(), 0, 'no ✕ button');
+    await page.click('[data-testid=card-label]'); // tap somewhere else on the card
+    await page.waitForSelector('[data-testid=popover]', { state: 'detached' });
+    ok('tapping outside the popover closes it');
+    // Pulse ring clearance: the transport row starts below the ring's largest extent.
+    const clear = await page.evaluate(() => {
+      const b = document.querySelector('[data-testid=replay]').getBoundingClientRect();
+      const t = document.querySelector('[data-testid=transport]').getBoundingClientRect();
+      const ringOut = ((b.height + 12) / 2) * 1.25 - b.height / 2; // inset −6px, scale 1.25
+      return { gap: t.top - b.bottom, ringOut };
+    });
+    assert.ok(clear.gap >= clear.ringOut, `transport gap ${clear.gap}px ≥ pulse overshoot ${clear.ringOut}px`);
+    ok(`pulse ring clears the buttons below (${Math.round(clear.gap)}px ≥ ${Math.round(clear.ringOut)}px)`);
     await page.click('[data-testid=grade-good]');
 
     step('6b. Vocab list: "No audio" filter lists words that have a reading but no clip');
