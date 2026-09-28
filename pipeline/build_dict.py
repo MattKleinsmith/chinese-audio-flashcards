@@ -90,7 +90,9 @@ def build(data_dir: Path, work_dir: Path, hsk_dir: Path | None) -> dict:
         have = {w["s"] for w in json.loads(wp.read_text(encoding="utf-8"))}
     out: dict[str, dict] = {}
     missing = 0
-    for w in sorted(wanted_words(data_dir, hsk_dir) - have):
+    wanted = wanted_words(data_dir, hsk_dir)
+    words_p = {w["s"]: w.get("p", "") for w in json.loads(wp.read_text(encoding="utf-8"))} if wp.exists() else {}
+    for w in sorted(wanted - have):
         chosen = cedict_mod.choose(w, cedict.get(w, []), None, resolve=cedict)
         if not chosen:
             missing += 1
@@ -102,7 +104,37 @@ def build(data_dir: Path, work_dir: Path, hsk_dir: Path | None) -> dict:
         if glosses:
             entry["d"] = glosses
         out[w] = entry
-    print(f"dict: {len(out)} entries ({missing} wanted words not in CEDICT)")
+    # Every reading of heteronyms (重 zhòng "heavy" / chóng "again"), so the word popover can
+    # show the reading used in the sentence first and the others below it.
+    n_multi = 0
+    for w in sorted(wanted):
+        r = readings(w, cedict.get(w, []))
+        if len(r) < 2:
+            continue
+        n_multi += 1
+        entry = out.setdefault(w, {"p": words_p.get(w) or r[0]["p"]})
+        entry["r"] = r
+    print(f"dict: {len(out)} entries ({missing} wanted words not in CEDICT; {n_multi} with several readings)")
+    return out
+
+
+def readings(word: str, entries: list) -> list[dict]:
+    """Distinct lowercase readings of `word` with cleaned glosses, common readings first.
+    Readings that exist only as proper nouns (surnames, places) are dropped when others exist."""
+    by_p: dict[str, dict] = {}
+    for e in entries:
+        p = e.pinyin.lower()
+        if len(p.split()) != len(word):
+            continue
+        slot = by_p.setdefault(p, {"glosses": [], "common": False})
+        slot["glosses"].extend(e.glosses)
+        slot["common"] = slot["common"] or not e.proper_noun
+    items = [(p, v) for p, v in by_p.items() if v["common"]] or list(by_p.items())
+    out = []
+    for p, v in items:
+        d = cedict_mod.clean_glosses(v["glosses"])
+        if d:
+            out.append({"p": p, "d": d})
     return out
 
 

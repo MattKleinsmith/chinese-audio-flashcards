@@ -57,6 +57,9 @@ export class DataBundle {
     };
   }
 
+  /** All readings of a heteronym as [{ p, d }] (from dict.json), or null for single-reading words. */
+  readings(s) { const e = this.dict[s]; return e && Array.isArray(e.r) && e.r.length > 1 ? e.r : null; }
+
   /** True when the word has at least one audio clip. */
   hasAudio(s, t) { const w = lookupWord(this.words, s, t); return !!(w && w.clips && w.clips.length); }
 

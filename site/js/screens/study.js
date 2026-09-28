@@ -13,7 +13,7 @@
 import { h, clear, pinyinEl, glossList, formatDuration, plural, dismissToast } from '../util.js';
 import { gradeCard, previewIntervals } from '../scheduler.js';
 import { preload, RATES, REWIND_STEPS } from '../audio.js';
-import { sentenceTokens, isKnownToken, clipKey } from '../queue.js';
+import { sentenceTokens, isKnownToken, clipKey, orderReadings } from '../queue.js';
 import { numericToMarks, toneOf } from '../pinyin.js';
 import { MODES } from './home.js';
 
@@ -410,8 +410,12 @@ export function render(root, app, [mode]) {
     closePopover();
     const w = data.lookup(text);
     const inVocab = state.vocab.has(text) || (w && state.vocab.has(w.s));
-    const pinyin = w ? w.p : cps.join(' ');
-    const defs = w ? glossList(w.d) : [];
+    // Heteronyms (重 zhòng / chóng): the reading used in this sentence first, the others below.
+    const all = data.readings(text);
+    const ordered = all ? orderReadings(all, cps.join(' ')) : null;
+    const pinyin = ordered ? ordered[0].p : w ? w.p : cps.join(' ');
+    const defs = ordered ? glossList(ordered[0].d) : w ? glossList(w.d) : [];
+    const others = ordered ? ordered.slice(1) : [];
     const addBtn = inVocab
       ? h('span', { class: 'muted small' }, 'In your vocab ✓')
       : h('button', {
@@ -432,6 +436,11 @@ export function render(root, app, [mode]) {
         : w && w.charGlosses
           ? h('ul', { class: 'defs chars' }, w.charGlosses.map((cg) => h('li', {}, h('span', { lang: 'zh-Hans' }, cg.c), ' ', pinyinEl(cg.p, { toneColors: settings.toneColors, className: 'pinyin small' }), cg.d.length ? ` — ${cg.d.join('; ')}` : '')))
           : h('p', { class: 'muted' }, 'no definition'),
+      others.length ? h('div', { class: 'pop-alt', 'data-testid': 'popover-alt' },
+        h('span', { class: 'muted small' }, 'Also read'),
+        h('ul', { class: 'defs' }, others.map((r) => h('li', {},
+          pinyinEl(r.p, { toneColors: settings.toneColors, className: 'pinyin small' }), ' ',
+          h('span', { class: 'muted' }, glossList(r.d).slice(0, 2).join('; ')))))) : null,
       h('div', { class: 'pop-foot' }, w && w.hsk ? h('span', { class: 'badge' }, `HSK ${w.hsk}`) : h('span'), addBtn));
     cardArea.append(popover);
     // Anchor below the token, clamped inside the card area.

@@ -224,3 +224,21 @@ export function queueStats(input) {
     sentencesUnlocked: sentCands.length,
   };
 }
+
+/**
+ * Order a word's readings for a given spoken pinyin (numeric, space-separated): the reading whose
+ * syllables match what was said (ignoring tones, then preferring equal tones) comes first.
+ * Pure; unit-tested. Returns a new array.
+ */
+export function orderReadings(readings, spoken) {
+  const syl = (p) => String(p || '').trim().split(/\s+/).filter(Boolean);
+  const base = (x) => x.replace(/[1-5]$/, '');
+  const said = syl(spoken);
+  const score = (r) => {
+    const s = syl(r.p);
+    if (s.length !== said.length) return -1;
+    if (s.some((x, i) => base(x) !== base(said[i]))) return 0;
+    return 1 + s.filter((x, i) => x === said[i]).length;
+  };
+  return readings.map((r, i) => ({ r, i, sc: score(r) })).sort((a, b) => b.sc - a.sc || a.i - b.i).map((x) => x.r);
+}

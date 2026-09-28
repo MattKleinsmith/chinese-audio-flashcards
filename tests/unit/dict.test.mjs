@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { DataBundle } from '../../site/js/data.js';
+import { orderReadings } from '../../site/js/queue.js';
 
 const manifest = { schemaVersion: 1, builtAt: '2026-01-01T00:00:00Z', baseUrl: '', counts: {}, sources: [], files: {} };
 const words = [{ id: 'w_1', s: '学习', t: '學習', p: 'xue2 xi2', d: ['to study'], hsk: 1, clips: [{ id: 'c1', file: 'clips/words/c1.mp3', ms: 1000 }] }];
@@ -28,4 +29,15 @@ test('composed from characters when the word itself is unknown', () => {
 test('undefined when even a character is unknown; single unknown chars are not composed', () => {
   assert.equal(data.lookup('坐飞机'), undefined);
   assert.equal(data.lookup('飞'), undefined);
+});
+
+test('readings() and orderReadings put the reading used in the sentence first', () => {
+  const d2 = new DataBundle(manifest, words, [], './data/', { '重': { p: 'zhong4', r: [{ p: 'zhong4', d: ['heavy'] }, { p: 'chong2', d: ['again'] }] }, '火': { p: 'huo3' } });
+  assert.equal(d2.readings('火'), null);
+  const r = d2.readings('重');
+  assert.deepEqual(orderReadings(r, 'chong2').map((x) => x.p), ['chong2', 'zhong4']);
+  assert.deepEqual(orderReadings(r, 'zhong4').map((x) => x.p), ['zhong4', 'chong2']);
+  assert.deepEqual(orderReadings(r, 'chong4').map((x) => x.p), ['chong2', 'zhong4'], 'tone slip still matches by syllable');
+  const ke = [{ p: 'ke3 yi3', d: ['can'] }, { p: 'ke4 yi4', d: ['x'] }];
+  assert.equal(orderReadings(ke, 'ke2 yi3')[0].p, 'ke3 yi3', 'sandhi tones prefer the closest');
 });

@@ -22,6 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import cedict as cedict_mod  # noqa: E402
+import pinyin_fix  # noqa: E402
 import select_sentences as sel_mod  # noqa: E402
 import validate as validate_mod  # noqa: E402
 from always_known import ALWAYS_KNOWN  # noqa: E402
@@ -152,6 +153,9 @@ def build_sentences(args, hsk_levels: dict[str, int], out_dir: Path, cache: dict
                      "accent": info.get("accent", "")},
         })
     entries.sort(key=lambda e: e["id"])
+    # The corpus pinyin records what each speaker said (accents, slips); show standard readings.
+    fixed = pinyin_fix.apply(entries, cedict_mod.load(args.work_dir))
+    log(f"pinyin_fix: {fixed} syllables corrected to standard readings")
     stats = {"transcripts": n_all, "candidates_with_audio": len(idx["available"]),
              "wavs_in_archive": idx["wavs_seen"], "truncated": idx["truncated"],
              "rejected_duration": len(rejected), "distribution": dist}

@@ -373,6 +373,8 @@ body[data-route="study"] main { max-width: 640px; }
   padding: 10px 12px; text-align: left; display: flex; flex-direction: column; gap: 6px;
 }
 .pop-head { display: flex; align-items: center; gap: 8px; }
+.pop-alt { margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--border); font-size: 0.9rem; }
+.pop-alt ul { margin-top: 2px; }
 .pop-hz { font-family: var(--font-zh); font-size: 1.6rem; }
 .pop-head .pinyin { flex: 1; }
 .pop-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
