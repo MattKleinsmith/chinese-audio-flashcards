@@ -103,7 +103,12 @@ export function render(root, app, [mode]) {
   // The only audio UI. Relative rewinds and a speed choice are fine; elapsed time, duration,
   // a seek bar or a waveform are not (see HARD REQUIREMENT above).
   const replayHint = h('span', { class: 'replay-hint', 'aria-hidden': 'true' });
-  const replayIcon = h('span', { class: 'replay-icon', 'aria-hidden': 'true' }, '▶︎');
+  // SVG icons in a 24×24 box: the pause bars are geometrically centred, the play triangle's
+  // centroid sits on the centre (optical centring), so neither needs a CSS nudge.
+  const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5 L19.5 12 L8.5 19 Z"/></svg>';
+  const ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1"/><rect x="13.5" y="5" width="4" height="14" rx="1"/></svg>';
+  const replayIcon = h('span', { class: 'replay-icon', 'aria-hidden': 'true', 'data-icon': 'play' });
+  replayIcon.innerHTML = ICON_PLAY;
   const replayBtn = h('button', {
     class: 'replay', type: 'button', 'data-testid': 'replay', 'aria-label': 'Play audio',
     onclick: (e) => { e.stopPropagation(); togglePlay(); },
@@ -149,7 +154,8 @@ export function render(root, app, [mode]) {
     replayBtn.classList.toggle('playing', playing);
     replayBtn.classList.toggle('paused', st === 'paused');
     replayBtn.classList.toggle('blocked', st === 'blocked' || st === 'error');
-    replayIcon.textContent = playing ? '❚❚' : '▶︎';
+    const icon = playing ? 'pause' : 'play';
+    if (replayIcon.dataset.icon !== icon) { replayIcon.dataset.icon = icon; replayIcon.innerHTML = playing ? ICON_PAUSE : ICON_PLAY; }
     replayBtn.setAttribute('aria-label', playing ? 'Pause audio' : st === 'paused' ? 'Resume audio' : 'Play audio');
     replayHint.textContent = st === 'error' ? 'Audio failed · tap to retry' : st === 'paused' ? 'Paused' : '';
   };
