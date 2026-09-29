@@ -2,7 +2,8 @@
 // tiles (Words / Sentences / Mixed) with due · new counts and small vocab stats. PLAN §5.2.
 
 import { h } from '../util.js';
-import { lastSync, describeSync } from '../sync.js';
+import { lastSync, describeSync, relTime } from '../sync.js';
+import { summariseReviews } from './activity.js';
 
 export const MODES = [
   { id: 'words', label: 'Words', zh: '词', hint: 'Single words, one speaker' },
@@ -32,6 +33,35 @@ export function render(root, app) {
 
   const stats = state.stats();
   const last = lastMode();
+
+  // "Today" line per tile, read back from the review log in IndexedDB (not from memory), so it
+  // doubles as confirmation that finished cards were saved on this device.
+  const todayEls = new Map();
+  const todayLine = (mode) => {
+    const el = h('p', { class: 'today small', 'data-testid': `today-${mode}` }, '');
+    todayEls.set(mode, el);
+    return el;
+  };
+  (async () => {
+    let reviews = [];
+    try { reviews = (await app.db.getAll('reviews')) || []; } catch { /* leave empty */ }
+    const prefix = { words: 'word:', sentences: 'sentence:', mixed: '' };
+    for (const [mode, el] of todayEls) {
+      const mine = reviews.filter((r) => r && typeof r.cardId === 'string' && r.cardId.startsWith(prefix[mode]));
+      const sum = summariseReviews(mine, { dayStart: state.settings.dayStart, days: 1 });
+      const t = sum.today;
+      if (t.reviews) {
+        el.append(h('span', { class: 'today-count' }, 'Today: ',
+          h('strong', { 'data-testid': `today-reviews-${mode}` }, String(t.reviews)), ` review${t.reviews === 1 ? '' : 's'} · `,
+          h('strong', {}, String(t.cards)), ` card${t.cards === 1 ? '' : 's'}`),
+          h('span', { class: 'saved' }, ` · ✓ saved ${relTime(sum.last)}`));
+      } else if (sum.last) {
+        el.append(h('span', { class: 'muted' }, `Nothing yet today · last session ${relTime(sum.last)}`));
+      } else {
+        el.remove();
+      }
+    }
+  })();
   const tiles = h('section', { class: 'tiles', 'aria-label': 'Study modes' });
   // Sentences are the main thing; Words and Mixed are hidden unless enabled in Settings.
   const visibleModes = state.settings.showWordModes ? MODES : MODES.filter((m) => m.id === 'sentences');
@@ -47,6 +77,7 @@ export function render(root, app) {
       h('p', { class: 'counts' },
         h('span', { class: 'due', 'data-testid': `due-${m.id}` }, String(c.due)), ' due · ',
         h('span', { class: 'new', 'data-testid': `new-${m.id}` }, String(c.new)), ' new'),
+      todayLine(m.id),
       h('button', {
         class: `btn ${empty ? '' : 'primary'} block`, type: 'button', 'data-testid': `start-${m.id}`,
         'aria-label': `Start ${m.label}`,

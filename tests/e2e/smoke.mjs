@@ -186,6 +186,11 @@ async function main() {
     step('5. Reload → progress persisted');
     await page.reload();
     await page.waitForFunction(() => window.__clf && window.__clf.debug);
+    await page.goto(url + '#/');
+    await page.waitForSelector('[data-testid=today-reviews-words]');
+    assert.equal((await page.textContent('[data-testid=today-reviews-words]')).trim(), '1');
+    assert.match(await page.textContent('[data-testid=today-words]'), /Today: 1 review · 1 card · ✓ saved just now/);
+    ok('home tile shows today\'s saved reviews after a reload');
     const dbg = await page.evaluate(() => window.__clf.debug());
     assert.equal(dbg.dbMode, 'idb');
     assert.ok(dbg.reviews >= 1, `reviews = ${dbg.reviews}`);
