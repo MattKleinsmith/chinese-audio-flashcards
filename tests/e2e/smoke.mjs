@@ -147,8 +147,7 @@ async function main() {
     assert.ok(clipOk.length > 0, `clip request succeeded: ${JSON.stringify(clipResponses.slice(0, 5))}`);
     ok(`clip request returned ${clipOk[0].status}`);
     await noHorizontalScroll(page, 'study front');
-    const label = await page.textContent('[data-testid=card-label]');
-    assert.equal(label.trim(), 'Word');
+    assert.equal(await page.locator('[data-testid=card-label]').count(), 0, 'no kind/gender label on the card');
     await page.click('[data-testid=reveal]');
     await page.waitForSelector('[data-testid=answer-hanzi]');
     const hanzi = (await page.textContent('[data-testid=answer-hanzi]')).trim();
@@ -209,7 +208,7 @@ async function main() {
       await page.waitForSelector('[data-testid=replay], [data-testid=summary]');
     }
     assert.ok(await page.isVisible('[data-testid=replay]'), '≥ 1 sentence unlocked');
-    assert.match(await page.textContent('[data-testid=card-label]'), /^Sentence/);
+    assert.equal(await page.locator('[data-testid=card-label]').count(), 0, 'no kind/gender label on the card');
     assert.equal(await page.locator(FORBIDDEN).count(), 0);
     ok('sentence card shown, no duration UI');
     await page.click('[data-testid=reveal]');
@@ -271,7 +270,7 @@ async function main() {
     const pop = await page.textContent('[data-testid=popover]');
     ok(`popover: "${pop.replace(/\s+/g, ' ').trim().slice(0, 60)}"`);
     assert.equal(await page.locator('[data-testid=popover] button[aria-label=Close]').count(), 0, 'no ✕ button');
-    await page.click('[data-testid=card-label]'); // tap somewhere else on the card
+    await page.click('[data-testid=transport]', { position: { x: 2, y: 2 } }); // tap somewhere else on the card
     await page.waitForSelector('[data-testid=popover]', { state: 'detached' });
     ok('tapping outside the popover closes it');
     // Pulse ring clearance: the transport row starts below the ring's largest extent.

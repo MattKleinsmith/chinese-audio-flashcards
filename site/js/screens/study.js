@@ -216,8 +216,6 @@ export function render(root, app, [mode]) {
     paintUndo();
     clear(cardArea); clear(actions);
     cardArea.classList.toggle('revealed', revealed);
-    const label = item.kind === 'word' ? 'Word' : `Sentence${clip.gender ? ` · ${clip.gender}` : ''}`;
-    cardArea.append(h('p', { class: 'card-label', 'data-testid': 'card-label' }, label));
     replayBtn.classList.toggle('small', revealed);
     transport.classList.toggle('small', revealed);
     speeds.classList.toggle('small', revealed);

@@ -252,7 +252,6 @@ body[data-route="study"] main { max-width: 640px; }
   overflow-y: auto; overflow-x: hidden;
 }
 .card-area.revealed { justify-content: flex-start; }
-.card-label { margin: 0; color: var(--muted); font-size: 0.9rem; letter-spacing: 0.02em; text-transform: uppercase; }
 .reveal-zone { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; cursor: pointer; z-index: 1; }
 
 /* Replay: one big round button. Only a pulsing ring while playing — no time UI of any kind. */

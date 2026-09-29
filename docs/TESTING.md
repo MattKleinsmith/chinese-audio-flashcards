@@ -46,7 +46,7 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
 1. Settings → turn on *Show Words and Mixed modes* (Home shows only Sentences by default). Home → **Words** tile → **Start**.
 2. The clip should **play by itself** straight away. If the phone blocks autoplay, nothing
    plays until you tap the Play button.
-3. Check the front of the card. It must show **only** the label "Word", a round Play/Pause
+3. Check the front of the card. It must show **only** a round Play/Pause
    button, a row of transport buttons (↺, −5s, −1s, −.5s, −.1s) and a row of speed chips
    (0.25× to 1.5×). There must be **no** duration, timer, seek bar, progress line or waveform.
    The counter at the top counts cards (e.g. `0/20`), not seconds.
@@ -78,8 +78,8 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
 
 ## 5. Study sentences
 
-1. Home → **Sentences** → **Start**. The front label reads "Sentence · female" or
-   "Sentence · male". Nothing on the front gives away the text.
+1. Home → **Sentences** → **Start**. The front shows only the audio controls; nothing gives
+   away the text.
 2. If the tile says 0 new and 0 due, go to Settings → *Unknown words allowed per sentence* → 1 or 2.
 3. Reveal the answer. The sentence is split into words, with each character's pinyin
    underneath. Words not in your vocab have a dotted underline.
