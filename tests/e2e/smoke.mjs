@@ -119,10 +119,9 @@ async function main() {
     assert.equal(await audio.getAttribute('controls'), null, '<audio> has no controls attribute');
     ok('no duration/seek UI; single <audio> without controls');
     assert.match(await page.getAttribute('[data-testid=replay]', 'aria-label'), /^(Play|Pause|Resume) audio$/);
-    // Transport controls: restart + rewind steps, speed chips; none of them shows time.
-    for (const t of ['restart', 'rewind-5', 'rewind-1', 'rewind-0.5', 'rewind-0.1']) assert.ok(await page.isVisible(`[data-testid="${t}"]`), `${t} visible`);
-    assert.ok((await page.locator('[data-testid=transport]').innerText()).match(/−5s.*−1s.*−.5s.*−.1s/s), 'rewind labels');
-    assert.equal(await page.locator('[data-testid=speeds] button').count(), 1, 'a single speed toggle');
+    // One control row: restart, back 2 s, 0.25× toggle; none of them shows time.
+    assert.deepEqual(await page.$$eval('[data-testid=transport] button', (b) => b.map((x) => x.dataset.testid)), ['restart', 'rewind-2', 'speed-slow'], 'restart, −2s and 0.25× only');
+    assert.match(await page.locator('[data-testid=transport]').innerText(), /↺\s*−2s\s*0\.25×/);
     await page.click('[data-testid=speed-slow]');
     await page.waitForFunction(() => Math.abs(document.querySelector('audio').playbackRate - 0.25) < 1e-6);
     assert.equal(await page.getAttribute('[data-testid=speed-slow]', 'aria-checked'), 'true');
@@ -130,14 +129,14 @@ async function main() {
     await page.click('[data-testid=speed-slow]');
     await page.waitForFunction(() => document.querySelector('audio').playbackRate === 1);
     assert.equal(await page.getAttribute('[data-testid=speed-slow]', 'aria-checked'), 'false');
-    ok('transport row + 0.25× toggle work (on → 0.25×, off → 1×)');
+    ok('control row (↺, −2s, 0.25×) works: toggle on → 0.25×, off → 1×');
     // Pause / resume via the big button (headless Chromium has no audio output, but state flows).
     await page.evaluate(() => document.querySelector('audio').dispatchEvent(new Event('playing')));
     await page.waitForFunction(() => document.querySelector('[data-testid=replay]').getAttribute('aria-label') === 'Pause audio');
     await page.click('[data-testid=replay]');
     await page.waitForFunction(() => document.querySelector('[data-testid=replay]').getAttribute('aria-label') === 'Resume audio');
     assert.match(await page.textContent('[data-testid=replay]'), /Paused/);
-    await page.click('[data-testid=rewind-1]'); // rewinding while paused stays paused
+    await page.click('[data-testid=rewind-2]'); // rewinding while paused stays paused
     assert.equal(await page.getAttribute('[data-testid=replay]', 'aria-label'), 'Resume audio');
     ok('play → pause → rewind keeps paused state');
     await page.waitForFunction(() => document.querySelector('audio').src.endsWith('.mp3'));

@@ -1,5 +1,5 @@
 // screens/study.js — the card UI (PLAN §5.4).
-// Front: big Play/Pause button, a transport row (restart, rewind 5 s / 1 s / 0.5 s / 0.1 s),
+// Front: big Play/Pause button, one control row (restart, back 2 s, 0.25× toggle),
 // a 0.25× slow-down toggle, a Hint button and Show answer.
 // Back: word card (hanzi, tone-coloured pinyin, definitions, HSK badge) or sentence card
 // (tappable tokens with per-character pinyin in a two-row CSS grid, definition popover,
@@ -129,10 +129,10 @@ export function render(root, app, [mode]) {
 
   // One slow-down toggle: 0.25× (pitch preserved) on, natural speed off. Remembered.
   const slowBtn = h('button', {
-    class: 'speed slow', type: 'button', role: 'switch', 'data-testid': 'speed-slow', 'aria-label': `Slow down to ${SLOW_RATE}×`,
+    class: 'tbtn speed-toggle', type: 'button', role: 'switch', 'data-testid': 'speed-slow', 'aria-label': `Slow down to ${SLOW_RATE}×`,
     onclick: () => setRate(player.rate === SLOW_RATE ? 1 : SLOW_RATE),
   }, `${SLOW_RATE}×`);
-  const speeds = h('div', { class: 'speeds', 'data-testid': 'speeds', onclick: (e) => e.stopPropagation() }, slowBtn);
+  transport.append(slowBtn); // same row as restart / rewind
   function paintSpeeds() {
     const on = player.rate === SLOW_RATE;
     slowBtn.classList.toggle('active', on);
@@ -221,8 +221,7 @@ export function render(root, app, [mode]) {
     cardArea.classList.toggle('revealed', revealed);
     replayBtn.classList.toggle('small', revealed);
     transport.classList.toggle('small', revealed);
-    speeds.classList.toggle('small', revealed);
-    cardArea.append(replayBtn, transport, speeds);
+    cardArea.append(replayBtn, transport);
 
     if (!revealed) {
       cardArea.append(hintArea());
@@ -529,7 +528,7 @@ export function render(root, app, [mode]) {
       h('a', { class: 'btn grow', href: '#/', 'data-testid': 'study-home', 'aria-label': 'Home' }, 'Home')));
   }
 
-  // ---- Keyboard: space = play/pause, Enter = reveal, ← = back 1 s (shift: 5 s, alt: 0.1 s),
+  // ---- Keyboard: space = play/pause, Enter = reveal, ← = back 2 s,
   //      r = restart, s = 0.25× toggle, 1–4 = grade --------------------------------------
   const onKey = (e) => {
     if (e.target.closest && e.target.closest('input, textarea, select')) return;
@@ -537,7 +536,7 @@ export function render(root, app, [mode]) {
     if (e.ctrlKey || e.metaKey || !item) return;
     if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); togglePlay(); }
     else if (e.key === 'Enter' && !revealed && e.target === document.body) { e.preventDefault(); reveal(); }
-    else if (e.key === 'ArrowLeft') { e.preventDefault(); player.seekBy(e.shiftKey ? -5 : e.altKey ? -0.1 : -1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); player.seekBy(-REWIND_STEPS[0]); }
     else if (e.key === 'r' || e.key === 'R') playCurrent();
     else if ((e.key === 'h' || e.key === 'H') && !revealed) { e.preventDefault(); showHint(); }
     else if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') { e.preventDefault(); undo(); }

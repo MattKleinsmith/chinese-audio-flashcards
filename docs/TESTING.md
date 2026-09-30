@@ -47,14 +47,14 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
 2. The clip should **play by itself** straight away. If the phone blocks autoplay, nothing
    plays until you tap the Play button.
 3. Check the front of the card. It must show **only** a round Play/Pause
-   button, a row of transport buttons (↺, −5s, −1s, −.5s, −.1s) and a 0.25× toggle. There must be **no** duration, timer, seek bar, progress line or waveform.
+   button, and one row with ↺, −2s and a 0.25× toggle. There must be **no** duration, timer, seek bar, progress line or waveform.
    The counter at the top counts cards (e.g. `0/20`), not seconds.
 4. Transport checks, best done on a sentence card:
    - Tap the big button while a clip plays: it pauses and says *Paused*. Tap again: it resumes
      from where it stopped, not from the beginning.
-   - Tap −1s a few times quickly while playing: the audio jumps back each tap and keeps playing.
-     Tap −.1s repeatedly: small, precise steps. Tapping past the start just holds at the start.
-   - Pause, tap −5s, then resume: playback continues from the earlier point.
+   - Tap −2s a few times quickly while playing: the audio jumps back each tap and keeps playing.
+     Tapping past the start just holds at the start.
+   - Pause, tap −2s, then resume: playback continues from the earlier point.
    - Tap ↺: the clip restarts from the beginning.
    - Tap 0.25×: the clip plays at quarter speed with the voice's pitch unchanged. Tap it again
      for natural speed. Leave the app and come back: the choice is remembered (also in Settings).

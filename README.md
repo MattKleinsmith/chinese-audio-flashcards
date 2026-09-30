@@ -21,10 +21,10 @@ a few reps while waiting in line.
    and importing the same file again changes nothing.
    No export? Use **Quick start with HSK levels**.
 2. **Study**: tap *Start* on Sentences (Words and Mixed modes can be enabled in Settings). The clip plays automatically. The big
-   button pauses and resumes; the row under it restarts the clip or jumps back 5 s, 1 s, 0.5 s
-   or 0.1 s (tap repeatedly for fine control); the 0.25× toggle slows the clip right down with the
+   button pauses and resumes; the row under it restarts the clip (↺), jumps back 2 s (tap
+   repeatedly to go further), and has a 0.25× toggle that slows the clip right down with the
    pitch preserved. Tap *Show answer* to see the card, then grade yourself. Keyboard: space
-   play/pause, ← back 1 s (shift 5 s, alt 0.1 s), r restart, s 0.25× toggle, 1–4 grade,
+   play/pause, ← back 2 s, r restart, s 0.25× toggle, 1–4 grade,
    z or Backspace undo, h hint. **Hint** (front of the card) reveals the pinyin of one more syllable per tap, as spoken; tap a
    revealed syllable to see its character. Hints used are recorded in the activity log. The ↶ button brings back the previous card, revealed, with its grade
    reverted, handy for showing someone the card you just did.
