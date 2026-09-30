@@ -215,6 +215,20 @@ async function main() {
     assert.ok(await page.isVisible('[data-testid=replay]'), '≥ 1 sentence unlocked');
     assert.equal(await page.locator('[data-testid=card-label]').count(), 0, 'no kind/gender label on the card');
     assert.equal(await page.locator(FORBIDDEN).count(), 0);
+    // Hints: one syllable of pinyin per tap; tapping a syllable shows its character.
+    const firstCp = await page.evaluate(() => { const s = window.__clf.app.data.sentencesById.get(window.__clf.app.session.cardId.slice('sentence:'.length)); return { c: s.chars, n: s.chars.length }; });
+    assert.equal(await page.locator('[data-testid=hint-syl]').count(), 0, 'no hints before asking');
+    const replayTop = async () => page.evaluate(() => document.querySelector('[data-testid=replay]').getBoundingClientRect().top);
+    const topBefore = await replayTop();
+    await page.click('[data-testid=hint]');
+    await page.click('[data-testid=hint]');
+    assert.equal(await page.locator('[data-testid=hint-syl]').count(), 2, 'two taps → two syllables');
+    assert.equal(await replayTop(), topBefore, 'hints do not move the play button');
+    assert.doesNotMatch(await page.textContent('[data-testid=hint-strip]'), /\p{Script=Han}/u, 'pinyin only until a syllable is tapped');
+    await page.locator('[data-testid=hint-syl]').first().click();
+    assert.equal((await page.locator('[data-testid=hint-syl] .hint-hz').first().textContent()), firstCp.c[0], 'tapped syllable shows its character');
+    assert.equal(await page.locator('[data-testid=answer]').count(), 0, 'hints never reveal the answer');
+    ok('hint shows one syllable of pinyin per tap; tapping a syllable shows its character');
     ok('sentence card shown, no duration UI');
     await page.click('[data-testid=reveal]');
     await page.waitForSelector('[data-testid=sentence] .tok');

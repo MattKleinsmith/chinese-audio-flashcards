@@ -124,7 +124,8 @@ export function render(root, app) {
           h('span', { class: 'muted small' }, fmtTime(r.ts)), ' ',
           h('span', { class: `grade-${r.grade}` }, r.grade), ' ',
           h('span', { lang: 'zh-Hans' }, label(r.cardId)),
-          r.elapsedMs ? h('span', { class: 'muted small' }, ` · ${(r.elapsedMs / 1000).toFixed(0)}s`) : null)))
+          r.elapsedMs ? h('span', { class: 'muted small' }, ` · ${(r.elapsedMs / 1000).toFixed(0)}s`) : null,
+          r.hints ? h('span', { class: 'muted small' }, ` · ${r.hints} hint${r.hints === 1 ? '' : 's'}${r.hintChars ? ` (${r.hintChars} char)` : ''}`) : null)))
         : h('p', { class: 'muted' }, 'No reviews yet.'));
   })();
 }

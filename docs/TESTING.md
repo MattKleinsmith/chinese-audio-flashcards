@@ -59,6 +59,9 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
    - Tap ↺: the clip restarts from the beginning.
    - Tap 0.5× then 1.25×: the tempo changes but the voice keeps its pitch. Leave the app and
      come back: the chosen speed is remembered (it is also in Settings).
+4b. Tap **Hint**: the pinyin of the first syllable appears, followed by "…". Each further tap
+   (**Next syllable**) adds one syllable. Tap a revealed syllable: its character appears above
+   it. The play and rewind buttons do not move, and nothing reveals the answer.
 5. Tap **Show answer**, or tap anywhere on the lower half of the card. Check the back:
    - large Hanzi, plain (no pinyin, no colours) by default
    - up to 3 definitions

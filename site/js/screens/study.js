@@ -41,6 +41,9 @@ export function render(root, app, [mode]) {
   // Per-card view state.
   let item = null; let card = null; let content = null; let clip = null;
   let revealed = false; let shownAt = 0; let busy = false;
+  // Hints on the front: how many syllables' pinyin are shown, and which of those also show
+  // their character (tapped). Reset for every card.
+  let hintCount = 0; let hintChars = new Set();
 
   // ---- Static chrome --------------------------------------------------------------------------
   const counter = h('span', { class: 'session-count', 'data-testid': 'session-count', 'aria-label': 'Cards done this session' });
@@ -207,6 +210,7 @@ export function render(root, app, [mode]) {
     clip = chooseClip(item.kind, content, card.state);
     if (!clip) { session.queue.splice(session.pos, 1); return showCard(); }
     revealed = false;
+    hintCount = 0; hintChars = new Set();
     shownAt = Date.now();
     renderCard();
     updateCounter();
@@ -228,6 +232,7 @@ export function render(root, app, [mode]) {
     cardArea.append(replayBtn, transport, speeds);
 
     if (!revealed) {
+      cardArea.append(hintArea());
       // Tapping anywhere on the lower half of the card reveals the answer.
       cardArea.append(h('div', { class: 'reveal-zone', 'data-testid': 'reveal-zone', 'aria-hidden': 'true', onclick: reveal }));
       actions.append(h('button', { class: 'btn primary block big', type: 'button', 'data-testid': 'reveal', 'aria-label': 'Show answer', onclick: reveal }, 'Show answer'));
@@ -241,6 +246,42 @@ export function render(root, app, [mode]) {
         class: `btn grade grade-${g.id}`, type: 'button', 'data-testid': `grade-${g.id}`,
         'aria-label': `${g.label}, next in ${labels[g.id]}`, onclick: () => grade(g.id),
       }, h('span', { class: 'grade-label' }, g.label), h('span', { class: 'grade-ivl' }, labels[g.id])))));
+  }
+
+  // ---- Hints (front only) ----------------------------------------------------------------------
+  // Each Hint tap reveals the pinyin of the next syllable, as spoken (sound only). Tapping a
+  // revealed syllable also shows its character. Nothing reveals the sentence length or word
+  // boundaries: revealed syllables are followed by "…" while more remain.
+  function hintSyllables() {
+    if (item.kind === 'sentence') return content.chars.map((c, i) => ({ c, p: content.cp[i] || '' }));
+    const syl = String(content.p || '').trim().split(/\s+/);
+    const chars = [...content.s];
+    return chars.length === syl.length ? chars.map((c, i) => ({ c, p: syl[i] })) : [{ c: content.s, p: content.p || '' }];
+  }
+
+  function hintArea() {
+    const syls = hintSyllables();
+    const more = hintCount < syls.length;
+    const strip = h('div', { class: 'hint-strip', lang: 'zh-Hans', 'data-testid': 'hint-strip', 'aria-live': 'polite' },
+      syls.slice(0, hintCount).map((x, i) => h('button', {
+        class: `hint-syl${hintChars.has(i) ? ' with-char' : ''}`, type: 'button', 'data-testid': 'hint-syl',
+        'aria-label': hintChars.has(i) ? `${x.c} ${numericToMarks(x.p)}` : `${numericToMarks(x.p)}, tap to show the character`,
+        onclick: (e) => { e.stopPropagation(); if (hintChars.has(i)) hintChars.delete(i); else hintChars.add(i); renderCard(); },
+      }, hintChars.has(i) ? h('span', { class: 'hint-hz' }, x.c) : null, h('span', { class: 'hint-py', lang: 'zh-Latn-pinyin' }, numericToMarks(x.p)))),
+      hintCount && more ? h('span', { class: 'hint-more', 'aria-hidden': 'true' }, '…') : null);
+    const btn = h('button', {
+      class: 'chip toggle hint-btn', type: 'button', 'data-testid': 'hint', disabled: !more,
+      'aria-label': more ? 'Hint: show the next syllable' : 'All syllables shown',
+      onclick: (e) => { e.stopPropagation(); showHint(); },
+    }, !more ? 'All syllables shown' : hintCount ? 'Next syllable' : 'Hint');
+    return h('div', { class: 'hints', 'data-testid': 'hints', onclick: (e) => e.stopPropagation() },
+      hintCount ? strip : null, btn,
+      hintCount === 1 && !hintChars.size ? h('p', { class: 'muted small hint-tip' }, 'Tap a syllable to see its character') : null);
+  }
+
+  function showHint() {
+    if (revealed || !item) return;
+    if (hintCount < hintSyllables().length) { hintCount++; renderCard(); }
   }
 
   function reveal() {
@@ -260,7 +301,8 @@ export function render(root, app, [mode]) {
       if (wasNew && !next.introducedAt) next.introducedAt = now;
       const entry = { kind: 'grade', item, pos: session.pos, cardBefore: structuredClone(card), done: session.done, again: session.again, reviewId: null, insertedAt: null };
       await state.saveCard(next);
-      entry.reviewId = await state.logReview({ cardId: item.cardId, ts: now, grade: g, elapsedMs: now - shownAt });
+      entry.reviewId = await state.logReview({ cardId: item.cardId, ts: now, grade: g, elapsedMs: now - shownAt,
+        ...(hintCount ? { hints: hintCount, hintChars: hintChars.size } : {}) });
       session.done++;
       if (g === 'again') {
         session.again++;
@@ -504,6 +546,7 @@ export function render(root, app, [mode]) {
     else if (e.key === 'Enter' && !revealed && e.target === document.body) { e.preventDefault(); reveal(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); player.seekBy(e.shiftKey ? -5 : e.altKey ? -0.1 : -1); }
     else if (e.key === 'r' || e.key === 'R') playCurrent();
+    else if ((e.key === 'h' || e.key === 'H') && !revealed) { e.preventDefault(); showHint(); }
     else if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') { e.preventDefault(); undo(); }
     else if (e.key === '[' || e.key === ']') {
       const i = RATES.findIndex((r) => Math.abs(r - player.rate) < 1e-6);

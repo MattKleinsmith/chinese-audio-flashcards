@@ -254,7 +254,10 @@ body[data-route="study"] main { max-width: 640px; }
   background: var(--surface); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow);
   overflow-y: auto; overflow-x: hidden;
 }
-.card-area.revealed { justify-content: flex-start; }
+/* Controls are anchored at the top on both sides so hints (front) or the answer (back) grow
+   downward and the play/rewind buttons never move under the thumb. */
+.card-area { justify-content: flex-start; }
+.card-area:not(.revealed) { padding-top: clamp(20px, 9vh, 72px); }
 .reveal-zone { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; cursor: pointer; z-index: 1; }
 
 /* Replay: one big round button. Only a pulsing ring while playing — no time UI of any kind. */
@@ -421,3 +424,19 @@ ul.log .grade-again { color: var(--g-again); font-weight: 700; }
 ul.log .grade-hard { color: var(--g-hard); font-weight: 700; }
 ul.log .grade-good { color: var(--g-good); font-weight: 700; }
 ul.log .grade-easy { color: var(--g-easy); font-weight: 700; }
+
+/* Hints on the card front: revealed syllables (pinyin, optionally with the character) + button.
+   Sits above the tap-to-reveal zone so tapping a hint never reveals the answer. */
+.hints { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 4px; max-width: 100%; }
+.hint-strip { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 6px; max-width: 100%; }
+.hint-syl {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: flex-end; min-width: 40px; min-height: 40px;
+  padding: 4px 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2);
+  color: var(--fg); font: inherit; cursor: pointer; touch-action: manipulation;
+}
+.hint-syl .hint-py { font-size: 1.05rem; font-weight: 600; }
+.hint-syl .hint-hz { font-family: var(--font-zh); font-size: 1.5rem; line-height: 1.1; }
+.hint-syl.with-char { border-color: var(--accent-text); }
+.hint-more { color: var(--muted); font-size: 1.2rem; padding: 0 2px 6px; }
+.hint-btn:disabled { opacity: 0.5; cursor: default; }
+.hint-tip { margin: -4px 0 0; }
