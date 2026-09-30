@@ -2,7 +2,7 @@
 // (audio sources with licences and links, app version, data build date). PLAN §5.8.
 
 import { h, downloadJSON, ymd, readFileText, plural } from '../util.js';
-import { RATES } from '../audio.js';
+import { RATES, normaliseRate } from '../audio.js';
 import { lastSync, describeSync } from '../sync.js';
 
 function toggle(app, key, label, hint) {
@@ -66,7 +66,7 @@ export function render(root, app) {
       if (!confirm(`Replace ALL current data with this backup (${plural(n, 'word')}, ${plural((dump.reviews || []).length, 'review')})?`)) return;
       try {
         await state.restoreAll(dump);
-        app.player.setRate(state.settings.rate);
+        app.player.setRate(normaliseRate(state.settings.rate));
         app.toast(`Restored ${plural(state.vocab.size, 'word')}`);
         app.navigate('#/');
       } catch (err) { app.toast(`Restore failed: ${err.message}`); }
@@ -94,7 +94,7 @@ export function render(root, app) {
       toggle(app, 'autoplay', 'Autoplay audio', 'Play each clip when the card appears'),
       toggle(app, 'showWordModes', 'Show Words and Mixed modes', 'Off = only Sentences on the home screen'),
       select(app, 'rate', 'Playback speed', RATES.map((r) => [r, r === 1 ? '1× (natural speed)' : `${r}× — pitch preserved`]), {
-        parse: Number, onChange: (v) => app.player.setRate(v),
+        parse: (v) => normaliseRate(v), onChange: (v) => app.player.setRate(v),
       }),
       toggle(app, 'showPinyin', 'Show pinyin', 'Also switchable on each card; tone colours follow it'),
       toggle(app, 'showSpacing', 'Show word spacing in sentences', 'Also switchable on each card; Chinese is normally written without spaces'),

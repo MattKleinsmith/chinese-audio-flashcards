@@ -8,7 +8,7 @@ import { loadData, DATA_DIR } from './data.js';
 import { syncFromBundle } from './sync.js';
 import { installUpdater } from './update.js';
 import { createAppState } from './state.js';
-import { AudioPlayer } from './audio.js';
+import { AudioPlayer, normaliseRate } from './audio.js';
 import { h, clear, toast, banner, dismissToast } from './util.js';
 import * as home from './screens/home.js';
 import * as study from './screens/study.js';
@@ -91,7 +91,7 @@ async function boot() {
   }
   const state = await createAppState(db, data);
   const player = new AudioPlayer(document.getElementById('player'));
-  player.setRate(state.settings.rate);
+  player.setRate(normaliseRate(state.settings.rate));
 
   app = { state, data, player, db, navigate, toast, buildSha: buildSha(), session: null };
   window.__clf = {

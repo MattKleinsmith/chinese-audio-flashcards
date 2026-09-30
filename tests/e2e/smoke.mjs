@@ -122,13 +122,15 @@ async function main() {
     // Transport controls: restart + rewind steps, speed chips; none of them shows time.
     for (const t of ['restart', 'rewind-5', 'rewind-1', 'rewind-0.5', 'rewind-0.1']) assert.ok(await page.isVisible(`[data-testid="${t}"]`), `${t} visible`);
     assert.ok((await page.locator('[data-testid=transport]').innerText()).match(/−5s.*−1s.*−.5s.*−.1s/s), 'rewind labels');
-    await page.click('[data-testid="speed-0.75"]');
-    await page.waitForFunction(() => Math.abs(document.querySelector('audio').playbackRate - 0.75) < 1e-6);
-    assert.equal(await page.getAttribute('[data-testid="speed-0.75"]', 'aria-checked'), 'true');
+    assert.equal(await page.locator('[data-testid=speeds] button').count(), 1, 'a single speed toggle');
+    await page.click('[data-testid=speed-slow]');
+    await page.waitForFunction(() => Math.abs(document.querySelector('audio').playbackRate - 0.25) < 1e-6);
+    assert.equal(await page.getAttribute('[data-testid=speed-slow]', 'aria-checked'), 'true');
     assert.equal(await page.evaluate(() => document.querySelector('audio').preservesPitch !== false), true, 'pitch preserved');
-    await page.click('[data-testid=speed-1]');
+    await page.click('[data-testid=speed-slow]');
     await page.waitForFunction(() => document.querySelector('audio').playbackRate === 1);
-    ok('transport row + speed chips work (0.75× applied and back to 1×)');
+    assert.equal(await page.getAttribute('[data-testid=speed-slow]', 'aria-checked'), 'false');
+    ok('transport row + 0.25× toggle work (on → 0.25×, off → 1×)');
     // Pause / resume via the big button (headless Chromium has no audio output, but state flows).
     await page.evaluate(() => document.querySelector('audio').dispatchEvent(new Event('playing')));
     await page.waitForFunction(() => document.querySelector('[data-testid=replay]').getAttribute('aria-label') === 'Pause audio');

@@ -1,6 +1,6 @@
 // screens/study.js — the card UI (PLAN §5.4).
 // Front: big Play/Pause button, a transport row (restart, rewind 5 s / 1 s / 0.5 s / 0.1 s),
-// a playback-speed row, the "Word" / "Sentence · <gender>" label and Show answer.
+// a 0.25× slow-down toggle, a Hint button and Show answer.
 // Back: word card (hanzi, tone-coloured pinyin, definitions, HSK badge) or sentence card
 // (tappable tokens with per-character pinyin in a two-row CSS grid, definition popover,
 // + Add to vocab), the same transport controls (smaller), and the Again / Hard / Good / Easy
@@ -12,7 +12,7 @@
 
 import { h, clear, pinyinEl, glossList, formatDuration, plural, dismissToast } from '../util.js';
 import { gradeCard, previewIntervals } from '../scheduler.js';
-import { preload, RATES, REWIND_STEPS } from '../audio.js';
+import { preload, SLOW_RATE, normaliseRate, REWIND_STEPS } from '../audio.js';
 import { sentenceTokens, isKnownToken, clipKey, orderReadings } from '../queue.js';
 import { numericToMarks, toneOf } from '../pinyin.js';
 import { MODES } from './home.js';
@@ -30,7 +30,7 @@ export function render(root, app, [mode]) {
   const { state, data, player } = app;
   const modeInfo = MODES.find((m) => m.id === mode) || MODES[0];
   const settings = state.settings;
-  player.setRate(settings.rate);
+  player.setRate(normaliseRate(settings.rate));
   dismissToast(0); // the card needs the whole screen
 
   const session = {
@@ -127,28 +127,21 @@ export function render(root, app, [mode]) {
       onclick: () => { if (clip) player.seekBy(-sec); },
     }, fmtStep(sec))));
 
-  const speedBtns = new Map();
-  const speeds = h('div', { class: 'speeds', role: 'radiogroup', 'aria-label': 'Playback speed', 'data-testid': 'speeds',
-    onclick: (e) => e.stopPropagation() },
-    ...RATES.map((r) => {
-      const b = h('button', {
-        class: 'speed', type: 'button', role: 'radio', 'data-testid': `speed-${r}`, 'aria-label': `Speed ${r}×`,
-        onclick: () => setRate(r),
-      }, `${r}×`);
-      speedBtns.set(r, b);
-      return b;
-    }));
+  // One slow-down toggle: 0.25× (pitch preserved) on, natural speed off. Remembered.
+  const slowBtn = h('button', {
+    class: 'speed slow', type: 'button', role: 'switch', 'data-testid': 'speed-slow', 'aria-label': `Slow down to ${SLOW_RATE}×`,
+    onclick: () => setRate(player.rate === SLOW_RATE ? 1 : SLOW_RATE),
+  }, `${SLOW_RATE}×`);
+  const speeds = h('div', { class: 'speeds', 'data-testid': 'speeds', onclick: (e) => e.stopPropagation() }, slowBtn);
   function paintSpeeds() {
-    for (const [r, b] of speedBtns) {
-      const on = Math.abs(r - player.rate) < 1e-6;
-      b.classList.toggle('active', on);
-      b.setAttribute('aria-checked', on ? 'true' : 'false');
-    }
+    const on = player.rate === SLOW_RATE;
+    slowBtn.classList.toggle('active', on);
+    slowBtn.setAttribute('aria-checked', on ? 'true' : 'false');
   }
   async function setRate(r) {
-    player.setRate(r);
+    player.setRate(normaliseRate(r));
     paintSpeeds();
-    await state.setSetting('rate', r);
+    await state.setSetting('rate', player.rate);
   }
   paintSpeeds();
 
@@ -537,7 +530,7 @@ export function render(root, app, [mode]) {
   }
 
   // ---- Keyboard: space = play/pause, Enter = reveal, ← = back 1 s (shift: 5 s, alt: 0.1 s),
-  //      r = restart, [ ] = slower / faster, 1–4 = grade --------------------------------------
+  //      r = restart, s = 0.25× toggle, 1–4 = grade --------------------------------------
   const onKey = (e) => {
     if (e.target.closest && e.target.closest('input, textarea, select')) return;
     if (e.key === 'Escape' && popover) { closePopover(); return; }
@@ -548,11 +541,7 @@ export function render(root, app, [mode]) {
     else if (e.key === 'r' || e.key === 'R') playCurrent();
     else if ((e.key === 'h' || e.key === 'H') && !revealed) { e.preventDefault(); showHint(); }
     else if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') { e.preventDefault(); undo(); }
-    else if (e.key === '[' || e.key === ']') {
-      const i = RATES.findIndex((r) => Math.abs(r - player.rate) < 1e-6);
-      const j = Math.min(RATES.length - 1, Math.max(0, (i < 0 ? RATES.indexOf(1) : i) + (e.key === ']' ? 1 : -1)));
-      setRate(RATES[j]);
-    }
+    else if (e.key === 's' || e.key === 'S') setRate(player.rate === SLOW_RATE ? 1 : SLOW_RATE);
     else if (revealed) { const g = GRADES.find((x) => x.key === e.key); if (g) { e.preventDefault(); grade(g.id); } }
   };
   document.addEventListener('keydown', onKey);

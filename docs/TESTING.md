@@ -47,8 +47,7 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
 2. The clip should **play by itself** straight away. If the phone blocks autoplay, nothing
    plays until you tap the Play button.
 3. Check the front of the card. It must show **only** a round Play/Pause
-   button, a row of transport buttons (↺, −5s, −1s, −.5s, −.1s) and a row of speed chips
-   (0.25× to 1.5×). There must be **no** duration, timer, seek bar, progress line or waveform.
+   button, a row of transport buttons (↺, −5s, −1s, −.5s, −.1s) and a 0.25× toggle. There must be **no** duration, timer, seek bar, progress line or waveform.
    The counter at the top counts cards (e.g. `0/20`), not seconds.
 4. Transport checks, best done on a sentence card:
    - Tap the big button while a clip plays: it pauses and says *Paused*. Tap again: it resumes
@@ -57,8 +56,8 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
      Tap −.1s repeatedly: small, precise steps. Tapping past the start just holds at the start.
    - Pause, tap −5s, then resume: playback continues from the earlier point.
    - Tap ↺: the clip restarts from the beginning.
-   - Tap 0.5× then 1.25×: the tempo changes but the voice keeps its pitch. Leave the app and
-     come back: the chosen speed is remembered (it is also in Settings).
+   - Tap 0.25×: the clip plays at quarter speed with the voice's pitch unchanged. Tap it again
+     for natural speed. Leave the app and come back: the choice is remembered (also in Settings).
 4b. Tap **Hint**: the pinyin of the first syllable appears, followed by "…". Each further tap
    (**Next syllable**) adds one syllable. Tap a revealed syllable: its character appears above
    it. The play and rewind buttons do not move, and nothing reveals the answer.
@@ -70,7 +69,7 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
      Pleco / Hack Chinese tone colours (1 red, 2 green, 3 blue, 4 purple, neutral grey). The
      choice sticks for the next cards until you tap it again. Sentence cards also have a
      **Machine translation** chip that works the same way.
-6. The transport controls stay on the back (smaller). Pause, rewind and speed still work.
+6. The transport controls stay on the back (smaller). Pause, rewind and the 0.25× toggle still work.
 7. Grade with Again / Hard / Good / Easy. Each button shows its next interval (e.g. `1m`,
    `10m`, `4d`). Press **Again** on one card: it comes back 3–6 cards later in the same session.
 8. Tap ↶ in the top bar (or ≡ → *Undo last card*): the previous card comes back revealed with
@@ -102,8 +101,7 @@ No export file? Use *Quick start with HSK levels*: tick HSK 1 (and 2), then tap 
 ## 7. Settings, backup and restore
 
 1. Settings: toggle *Autoplay*, *Tone colours*, *Show traditional* and *Show definition*, then
-   start a session and check that each toggle takes effect. *Playback speed 0.85×* is marked
-   "not natural speed".
+   start a session and check that each toggle takes effect.
 2. **Export everything**. A file named `clf-backup-YYYYMMDD.json` is downloaded.
 3. **Delete all data**, then confirm. The app returns to the empty state.
 4. **Restore…** → pick the backup → confirm. Vocab and progress are back.

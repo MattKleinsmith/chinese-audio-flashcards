@@ -17,8 +17,11 @@
 
 export const CLIP_CACHE = 'clips-v1';
 
-/** Playback speeds offered in the UI (pitch is preserved at every speed). */
-export const RATES = [0.25, 0.5, 0.75, 1, 1.25, 1.5];
+/** Playback speeds offered in the UI: natural speed, or a single slow-down toggle (pitch is
+ *  preserved). Any other stored rate is treated as natural speed. */
+export const SLOW_RATE = 0.25;
+export const RATES = [1, SLOW_RATE];
+export const normaliseRate = (r) => (Math.abs(Number(r) - SLOW_RATE) < 1e-6 ? SLOW_RATE : 1);
 
 /** Rewind steps offered in the UI, in seconds (small ones are meant to be tapped repeatedly). */
 export const REWIND_STEPS = [5, 1, 0.5, 0.1];

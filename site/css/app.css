@@ -308,19 +308,16 @@ body[data-route="study"] main { max-width: 640px; }
 .transport.small .tbtn { height: 40px; font-size: 0.85rem; }
 .transport.small .tbtn:first-child { flex-basis: 40px; font-size: 1.15rem; }
 
-/* Speed chips (pitch is preserved at every speed). */
-.speeds {
-  position: relative; z-index: 2;
-  display: flex; gap: 4px; justify-content: center; width: 100%; max-width: 380px;
-}
+/* 0.25× slow-down toggle (pitch preserved). */
+.speeds { position: relative; z-index: 2; display: flex; justify-content: center; }
 .speed {
-  flex: 1 1 0; min-width: 0; height: 34px; padding: 0 2px;
+  height: 36px; padding: 0 18px;
   border: 1px solid var(--border); border-radius: 999px; background: transparent;
-  color: var(--muted); font: inherit; font-size: 0.78rem; font-weight: 600; font-variant-numeric: tabular-nums;
+  color: var(--muted); font: inherit; font-size: 0.85rem; font-weight: 700; font-variant-numeric: tabular-nums;
   cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none;
 }
 .speed.active { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
-.speeds.small .speed { height: 28px; font-size: 0.72rem; }
+.speeds.small .speed { height: 30px; font-size: 0.78rem; }
 
 
 .answer { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; text-align: center; }
